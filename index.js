@@ -9,6 +9,9 @@ const { error } = require('console');
 const  app   = express();
 app.use(express.urlencoded({  extended: false}))
 
+// เสิร์ฟไฟล์สาธารณะจากโฟลเดอร์ public
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -150,5 +153,21 @@ app.get('/logout', (req, res) => {
 app.get('/register', (req, res) => {
     res.render('register'); // ส่งไฟล์เทมเพลต 'register.ejs' ไปแสดงผล
 });
+
+app.get('/save-offer', function(req,res){
+    res.render('save-offer')
+})
+
+app.get('/settings', function(req,res){
+    res.render('settings')
+})
+
+app.get('/uplord', function(req,res){
+    res.render('uplord')
+})
+
+app.get('/notifications', function(req,res){
+    res.render('notifications')
+})
 
 app.listen(3000, () => console.log("Server  is running..."))
