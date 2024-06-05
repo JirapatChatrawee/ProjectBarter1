@@ -4,25 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Product</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Upload Product</h1>
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-        <div>
-            <label for="product_name">Product Name:</label>
-            <input type="text" id="product_name" name="product_name" required>
-        </div>
-        <div>
-            <label for="product_description">Product Description:</label>
-            <textarea id="product_description" name="product_description" required></textarea>
-        </div>
-        <div>
-            <label for="product_image">Product Image:</label>
-            <input type="file" id="product_image" name="product_image" accept="image/*" required>
-        </div>
-        <div>
-            <button type="submit">Upload</button>
-        </div>
-    </form>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Upload Product</h1>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="product_name">ชื่อสินค้า (จำเป็น):</label>
+                <input type="text" class="form-control" id="product_name" name="product_name" required>
+            </div>
+            <div class="form-group">
+                <label for="product_description">รายละเอียด (จำเป็น):</label>
+                <textarea class="form-control" id="product_description" name="product_description" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="product_image">อัพโหลดรูปภาพ:</label>
+                <input type="file" class="form-control-file" id="product_image" name="product_image" accept="image/*" required>
+            </div>
+        
+            <button type="submit" class="btn btn-primary btn-block">Upload</button>
+        </form>
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
