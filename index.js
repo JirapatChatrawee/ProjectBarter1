@@ -18,20 +18,38 @@ app.set('view engine', 'ejs');
 app.use(cookieSession({
     name: 'session',
     keys: ['key1', 'key2'],
-    maxAge: 3600 * 100  // 1hr
+    maxAge: 3600 * 1000  // 1hr
 }));
 
 // Setting up storage for uploaded images
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'public/uploads/');
-    },
-    filename: function (req, file, cb) {
+    destination: './public/uploads',
+    filename: function(req, file, cb){
         cb(null, Date.now() + path.extname(file.originalname)); // Rename the file to avoid conflicts
     }
 });
 
-const upload = multer({ storage: storage });
+// Init upload
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 1000000 },
+    fileFilter: function(req, file, cb){
+        checkFileType(file, cb);
+    }
+}).single('product_image');
+
+// Check file type
+function checkFileType(file, cb){
+    const filetypes = /jpeg|jpg|png|gif/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if(mimetype && extname){
+        return cb(null, true);
+    } else {
+        cb('Error: Images Only!');
+    }
+}
 
 // ตรวจสอบการล็อกอิน
 const ifNotLoggedIn = (req, res, next) => {
@@ -50,11 +68,15 @@ const ifLoggedIn = (req, res, next) => {
 
 // root page
 app.get('/', ifNotLoggedIn, (req, res, next) => {
-    dbConnection.execute("SELECT name FROM users WHERE id = ?", [req.session.userID])
+    dbConnection.execute("SELECT * FROM products")
         .then(([rows]) => {
             res.render('home', {
-                name: rows[0].name
+                name: req.session.userName,
+                products: rows
             });
+        })
+        .catch(err => {
+            console.log(err);
         });
 });
 
@@ -63,18 +85,35 @@ app.get('/upload', ifNotLoggedIn, (req, res) => {
     res.render('upload');
 });
 
-app.post('/upload', ifNotLoggedIn, upload.single('product_image'), (req, res) => {
-    const { product_name, product_description } = req.body;
-    const product_image = '/uploads/' + req.file.filename; // URL for the image
+app.post('/upload', ifNotLoggedIn, (req, res) => {
+    upload(req, res, (err) => {
+        if (err) {
+            res.render('upload', {
+                msg: err
+            });
+        } else {
+            if (req.file == undefined) {
+                res.render('upload', {
+                    msg: 'Error: No File Selected!'
+                });
+            } else {
+                const { product_name, product_description } = req.body;
+                const product_image = `/uploads/${req.file.filename}`;
 
-    dbConnection.execute(
-        "INSERT INTO products (name, description, image) VALUES (?, ?, ?)",
-        [product_name, product_description, product_image]
-    ).then(result => {
-        res.send('Product uploaded successfully!');
-    }).catch(err => {
-        console.error(err); // Log the error
-        res.send('Error occurred while uploading the product.');
+                dbConnection.execute(
+                    'INSERT INTO products (name, description, image) VALUES (?, ?, ?)',
+                    [product_name, product_description, product_image],
+                    (error, results) => {
+                        if (error) {
+                            console.log(error);
+                            res.send('Error occurred while uploading the product.');
+                        } else {
+                            res.redirect('/');
+                        }
+                    }
+                );
+            }
+        }
     });
 });
 
@@ -143,35 +182,36 @@ app.post('/', ifLoggedIn, [
                     if (compare_result === true) {
                         req.session.isLoggedIn = true;
                         req.session.userID = rows[0].id;
+                        req.session.userName = rows[0].name; // เพิ่มส่วนนี้เพื่อเก็บชื่อผู้ใช้ใน session
                         res.redirect('/');
                     } else {
                         res.render('login-register', {
                             login_errors: ['Invalid Password']
-                        })
+                        });
                     }
                 }).catch(err => {
                     if (err) throw err;
-                })
+                });
             }).catch(err => {
                 if (err) throw err;
-            })
+            });
     } else {
         let allErrors = validation_result.errors.map((error) => {
             return error.msg;
-        })
+        });
 
         res.render('login-register', {
             login_errors: allErrors
-        })
+        });
     }
-})
+});
 
 // Logout
 app.get('/logout', (req, res) => {
 
     req.session = null;
     res.redirect('/');
-})
+});
 
 
 
@@ -181,16 +221,16 @@ app.get('/register', (req, res) => {
     res.render('register'); // ส่งไฟล์เทมเพลต 'register.ejs' ไปแสดงผล
 });
 
-app.get('/save-offer', function (req, res) {
-    res.render('save-offer')
-})
+app.get('/save-offer', (req, res) => {
+    res.render('save-offer');
+});
 
-app.get('/settings', function (req, res) {
-    res.render('settings')
-})
+app.get('/settings', (req, res) => {
+    res.render('settings');
+});
 
-app.get('/notifications', function (req, res) {
-    res.render('notifications')
-})
+app.get('/notifications', (req, res) => {
+    res.render('notifications');
+});
 
-app.listen(3000, () => console.log("Server is running..."))
+app.listen(3000, () => console.log("Server is running..."));

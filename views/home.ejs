@@ -6,38 +6,35 @@
     <title>Home</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     
-  <!-- Responsive-->
-
-  <style>
-
-.navbar-brand img {
-    height: 100px; /* ปรับความสูงของโลโก้ */
-    width: 250px; /* ให้ความกว้างปรับตามสัดส่วนของโลโก้ */
-}
-.navbar-nav .nav-link {
-    font-size: 1.5rem; /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
-    margin-left: 2rem; /* ขยับไปทางขวา */
-}
-
-.navbar-text {
-    font-size: 1.5rem; /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
-}
-
-  </style>
-    
-   
-
+    <!-- Responsive-->
+    <style>
+        .navbar-brand img {
+            height: 100px; /* ปรับความสูงของโลโก้ */
+            width: 250px; /* ให้ความกว้างปรับตามสัดส่วนของโลโก้ */
+        }
+        .navbar-nav .nav-link {
+            font-size: 1.5rem; /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
+            margin-left: 2rem; /* ขยับไปทางขวา */
+        }
+        .navbar-text {
+            font-size: 1.5rem; /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
+        }
+        .product-image {
+            width: 100%;
+            height: 200px; /* ปรับความสูงให้เท่ากัน */
+            object-fit: cover; /* ให้ภาพเต็มพื้นที่โดยไม่บิดเบือน */
+        }
+        .product-card {
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-
-
-            <a class="navbar-brand" href="/"><img src="/images/Logo.png" alt="Logo" ></a>
-
-
+            <a class="navbar-brand" href="/"><img src="/images/Logo.png" alt="Logo"></a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
@@ -62,8 +59,20 @@
     </nav>
 
     <div class="container py-5">
-        <!-- เนื้อหาของคุณที่เหลือ -->
+        <h2 class="text-center mb-4">Products</h2>
+        <div class="row">
+            <% products.forEach(product => { %>
+                <div class="col-md-3 col-sm-6 product-card">
+                    <div class="card">
+                        <img src="<%= product.image %>" class="card-img-top product-image" alt="<%= product.name %>">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= product.name %></h5>
+                            <p class="card-text"><%= product.description %></p>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
     </div>
-
 </body>
 </html>
