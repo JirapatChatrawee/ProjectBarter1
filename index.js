@@ -2,9 +2,9 @@ const express = require('express');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const dbConnection = require('./database');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
+const dbConnection = require('./database');
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
@@ -21,11 +21,11 @@ app.use(cookieSession({
     maxAge: 3600 * 1000  // 1hr
 }));
 
-// Setting up storage for uploaded images
+// Set storage engine
 const storage = multer.diskStorage({
     destination: './public/uploads',
-    filename: function(req, file, cb){
-        cb(null, Date.now() + path.extname(file.originalname)); // Rename the file to avoid conflicts
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 
@@ -33,18 +33,18 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     limits: { fileSize: 1000000 },
-    fileFilter: function(req, file, cb){
+    fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
 }).single('product_image');
 
 // Check file type
-function checkFileType(file, cb){
+function checkFileType(file, cb) {
     const filetypes = /jpeg|jpg|png|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
 
-    if(mimetype && extname){
+    if (mimetype && extname) {
         return cb(null, true);
     } else {
         cb('Error: Images Only!');
@@ -102,16 +102,13 @@ app.post('/upload', ifNotLoggedIn, (req, res) => {
 
                 dbConnection.execute(
                     'INSERT INTO products (name, description, image) VALUES (?, ?, ?)',
-                    [product_name, product_description, product_image],
-                    (error, results) => {
-                        if (error) {
-                            console.log(error);
-                            res.send('Error occurred while uploading the product.');
-                        } else {
-                            res.redirect('/');
-                        }
-                    }
-                );
+                    [product_name, product_description, product_image]
+                ).then(result => {
+                    res.redirect('/'); // Redirect ไปยังหน้าโฮม
+                }).catch(err => {
+                    console.error(err);
+                    res.send('Error occurred while uploading the product.');
+                });
             }
         }
     });
@@ -126,7 +123,7 @@ app.post('/register', ifLoggedIn, [
                     return Promise.reject('This email already in use!');
                 }
                 return true;
-            })
+            });
     }),
     body('user_name', 'Username is empty!').trim().not().isEmpty(),
     body('user_pass', 'The password must be of minimum length 6 characters').trim().isLength({ min: 6 }),
@@ -167,7 +164,7 @@ app.post('/', ifLoggedIn, [
                 if (rows.length == 1) {
                     return true;
                 }
-                return Promise.reject('Invalid Email Address!')
+                return Promise.reject('Invalid Email Address!');
             });
     }),
     body('user_pass', 'Password is empty').trim().not().isEmpty(),
@@ -182,7 +179,6 @@ app.post('/', ifLoggedIn, [
                     if (compare_result === true) {
                         req.session.isLoggedIn = true;
                         req.session.userID = rows[0].id;
-                        req.session.userName = rows[0].name; // เพิ่มส่วนนี้เพื่อเก็บชื่อผู้ใช้ใน session
                         res.redirect('/');
                     } else {
                         res.render('login-register', {
@@ -217,19 +213,19 @@ app.get('/logout', (req, res) => {
 
 
 app.get('/register', (req, res) => {
-    
+
     res.render('register'); // ส่งไฟล์เทมเพลต 'register.ejs' ไปแสดงผล
 });
 
-app.get('/save-offer', (req, res) => {
+app.get('/save-offer', function (req, res) {
     res.render('save-offer');
 });
 
-app.get('/settings', (req, res) => {
+app.get('/settings', function (req, res) {
     res.render('settings');
 });
 
-app.get('/notifications', (req, res) => {
+app.get('/notifications', function (req, res) {
     res.render('notifications');
 });
 
