@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Upload Product</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
+    <form action="/upload" method="POST" enctype="multipart/form-data">
         <div>
             <label for="product_name">Product Name:</label>
             <input type="text" id="product_name" name="product_name" required>
@@ -18,9 +18,11 @@
         </div>
         <div>
             <label for="product_image">Product Image:</label>
-            <input type="file" id="product_image" name="product_image" required>
+            <input type="file" id="product_image" name="product_image" accept="image/*" required>
         </div>
-        <button type="submit">Upload</button>
+        <div>
+            <button type="submit">Upload</button>
+        </div>
     </form>
 </body>
 </html>

@@ -68,12 +68,13 @@ app.post('/upload', ifNotLoggedIn, upload.single('product_image'), (req, res) =>
     const product_image = '/uploads/' + req.file.filename; // URL for the image
 
     dbConnection.execute(
-        "INSERT INTO products (name, description, image_url) VALUES (?, ?, ?)",
+        "INSERT INTO products (name, description, image) VALUES (?, ?, ?)",
         [product_name, product_description, product_image]
     ).then(result => {
         res.send('Product uploaded successfully!');
     }).catch(err => {
-        if (err) throw err;
+        console.error(err); // Log the error
+        res.send('Error occurred while uploading the product.');
     });
 });
 
@@ -171,6 +172,7 @@ app.get('/logout', (req, res) => {
     req.session = null;
     res.redirect('/');
 })
+
 
 
 
