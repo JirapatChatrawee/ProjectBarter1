@@ -68,6 +68,7 @@ const ifLoggedIn = (req, res, next) => {
 
 // root page
 app.get('/', ifNotLoggedIn, (req, res, next) => {
+    console.log('User name:', req.session.userName); // ล็อกค่าของชื่อผู้ใช้
     dbConnection.execute("SELECT * FROM products")
         .then(([rows]) => {
             res.render('home', {
@@ -179,6 +180,7 @@ app.post('/', ifLoggedIn, [
                     if (compare_result === true) {
                         req.session.isLoggedIn = true;
                         req.session.userID = rows[0].id;
+                        req.session.userName = rows[0].name; // เก็บชื่อผู้ใช้ในเซสชั่น
                         res.redirect('/');
                     } else {
                         res.render('login-register', {
@@ -203,6 +205,7 @@ app.post('/', ifLoggedIn, [
 });
 
 // Logout
+
 app.get('/logout', (req, res) => {
 
     req.session = null;
