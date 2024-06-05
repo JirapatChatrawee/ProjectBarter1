@@ -21,15 +21,16 @@ app.use(cookieSession({
     maxAge: 3600 * 100  // 1hr
 }));
 
-// Middleware สำหรับการอัพโหลดไฟล์
+// Setting up storage for uploaded images
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+    destination: function (req, file, cb) {
         cb(null, 'public/uploads/');
     },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // กำหนดชื่อไฟล์ให้ไม่ซ้ำ
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // Rename the file to avoid conflicts
     }
 });
+
 const upload = multer({ storage: storage });
 
 // ตรวจสอบการล็อกอิน
@@ -64,14 +65,16 @@ app.get('/upload', ifNotLoggedIn, (req, res) => {
 
 app.post('/upload', ifNotLoggedIn, upload.single('product_image'), (req, res) => {
     const { product_name, product_description } = req.body;
-    const product_image = req.file.filename;
+    const product_image = '/uploads/' + req.file.filename; // URL for the image
 
-    dbConnection.execute("INSERT INTO products (name, description, image) VALUES (?, ?, ?)", [product_name, product_description, product_image])
-        .then(result => {
-            res.send('Product uploaded successfully!');
-        }).catch(err => {
-            if (err) throw err;
-        });
+    dbConnection.execute(
+        "INSERT INTO products (name, description, image_url) VALUES (?, ?, ?)",
+        [product_name, product_description, product_image]
+    ).then(result => {
+        res.send('Product uploaded successfully!');
+    }).catch(err => {
+        if (err) throw err;
+    });
 });
 
 // Register page
@@ -170,8 +173,9 @@ app.get('/logout', (req, res) => {
 })
 
 
-app.get('/register', (req, res) => {
 
+app.get('/register', (req, res) => {
+    
     res.render('register'); // ส่งไฟล์เทมเพลต 'register.ejs' ไปแสดงผล
 });
 
