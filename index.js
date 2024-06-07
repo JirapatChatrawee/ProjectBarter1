@@ -9,7 +9,7 @@ const dbConnection = require('./database');
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 
-// เสิร์ฟไฟล์สาธารณะจากโฟลเดอร์ public
+// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.set('views', path.join(__dirname, 'views'));
@@ -51,7 +51,7 @@ function checkFileType(file, cb) {
     }
 }
 
-// ตรวจสอบการล็อกอิน
+// Middleware to check if user is logged in
 const ifNotLoggedIn = (req, res, next) => {
     if (!req.session.isLoggedIn) {
         return res.render('login-register');
@@ -66,13 +66,13 @@ const ifLoggedIn = (req, res, next) => {
     next();
 };
 
-// root page
-app.get('/', ifNotLoggedIn, (req, res, next) => {
-    console.log('User name:', req.session.userName); // ล็อกค่าของชื่อผู้ใช้
+// Root page
+app.get('/', ifNotLoggedIn, (req, res) => {
+    console.log('User name:', req.session.userName); // Log the username
     dbConnection.execute("SELECT * FROM products")
         .then(([rows]) => {
             res.render('home', {
-                name: req.session.userName,
+                name: req.session.userName, // ส่งค่า name มาให้กับหน้าเว็บ home
                 products: rows
             });
         })
@@ -81,7 +81,8 @@ app.get('/', ifNotLoggedIn, (req, res, next) => {
         });
 });
 
-// อัพโหลดสินค้า
+
+// Upload product page
 app.get('/upload', ifNotLoggedIn, (req, res) => {
     res.render('upload');
 });
@@ -105,7 +106,7 @@ app.post('/upload', ifNotLoggedIn, (req, res) => {
                     'INSERT INTO products (name, description, image, location, status) VALUES (?, ?, ?, ?, ?)',
                     [product_name, product_description, product_image, product_location, product_status]
                 ).then(result => {
-                    res.redirect('/'); // Redirect ไปยังหน้าโฮม
+                    res.redirect('/'); // Redirect to home page
                 }).catch(err => {
                     console.error(err);
                     res.send('Error occurred while uploading the product.');
@@ -180,7 +181,7 @@ app.post('/', ifLoggedIn, [
                     if (compare_result === true) {
                         req.session.isLoggedIn = true;
                         req.session.userID = rows[0].id;
-                        req.session.userName = rows[0].name; // เก็บชื่อผู้ใช้ในเซสชั่น
+                        req.session.userName = rows[0].name; // Store username in session
                         res.redirect('/');
                     } else {
                         res.render('login-register', {
@@ -212,24 +213,42 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-
+// Product details page
+app.get('/product/:id', (req, res) => {
+    const productId = req.params.id;
+    dbConnection.execute("SELECT * FROM products WHERE id = ?", [productId])
+        .then(([rows]) => {
+            if (rows.length > 0) {
+                res.render('product', { product: rows[0], name: req.session.userName }); // ส่งค่า name มาให้กับหน้าเว็บ product
+            } else {
+                res.status(404).send('Product not found');
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).send('Error occurred while fetching the product.');
+        });
+});
 
 
 app.get('/register', (req, res) => {
-
-    res.render('register'); // ส่งไฟล์เทมเพลต 'register.ejs' ไปแสดงผล
+    res.render('register');
 });
 
-app.get('/save-offer', function (req, res) {
+app.get('/save-offer', (req, res) => {
     res.render('save-offer');
 });
 
-app.get('/settings', function (req, res) {
+app.get('/settings', (req, res) => {
     res.render('settings');
 });
 
-app.get('/notifications', function (req, res) {
+app.get('/notifications', (req, res) => {
     res.render('notifications');
+});
+
+app.get('/product', (req, res) => {
+    res.render('product');
 });
 
 app.listen(3000, () => console.log("Server is running..."));

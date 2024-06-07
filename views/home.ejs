@@ -23,6 +23,11 @@
             height: 100%; /* ให้การ์ดมีความสูงเต็มที่เท่ากัน */
             display: flex;
             flex-direction: column;
+            transition: transform 0.2s; /* เพิ่ม transition */
+        }
+        .card:hover {
+            transform: scale(1.05); /* ขยายเมื่อ hover */
+            cursor: pointer; /* เปลี่ยน cursor เป็น pointer */
         }
         .card-body {
             flex: 1;
@@ -75,13 +80,13 @@
         <div class="row">
             <% products.forEach(product => { %>
                 <div class="col-md-4 mb-4">
-                    <div class="card">
+                    <div class="card" onclick="window.location.href='/product/<%= product.id %>'">
                         <img src="<%= product.image %>" class="card-img-top" alt="<%= product.name %>">
                         <div class="card-body">
                             <h5 class="card-title"><%= product.name %></h5>
                             <p class="card-text"><%= product.description %></p>
-                           <!-- <p class="card-text"><strong>ที่อยู่:</strong> <%= product.location %> </p> -->
-                            <p class="card-text"><strong></strong> <span style="color: orange;"><%= product.status === 'free' ? 'Free' : 'Exchange' %></span></p>
+                            <!-- <p class="card-text"><strong>ที่อยู่:</strong> <%= product.location %> </p> -->
+                            <p class="card-text"><strong>สถานะ:</strong> <span style="color: orange;"><%= product.status === 'free' ? 'Free' : 'Exchange' %></span></p>
                         </div>
                     </div>
                 </div>
