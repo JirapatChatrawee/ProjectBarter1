@@ -83,9 +83,13 @@ app.get('/', ifNotLoggedIn, (req, res) => {
 
 
 // Upload product page
+
 app.get('/upload', ifNotLoggedIn, (req, res) => {
-    res.render('upload');
+    res.render('upload', {
+        name: req.session.userName // ส่งค่า name ไปยังหน้า upload
+    });
 });
+
 
 app.post('/upload', ifNotLoggedIn, (req, res) => {
     upload(req, res, (err) => {

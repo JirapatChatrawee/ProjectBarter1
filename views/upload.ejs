@@ -6,8 +6,74 @@
     <title>Upload Product</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Navbar */
+        .navbar {
+            background-color: rgb(0, 0, 0); /* เปลี่ยนสีพื้นหลังเป็นสีดำ */
+            
+        }
+        .navbar-brand img {
+            height: 100px;
+            width: 250px;
+        }
+        .navbar-nav .nav-link {
+            font-size: 1.5rem;
+            margin-left: 2rem;
+            color: white; /* เปลี่ยนสีตัวอักษรใน Navbar เป็นสีขาว */
+        }
+        .navbar-text {
+            font-size: 1.5rem;
+            color: white; /* เปลี่ยนสีตัวอักษรใน Navbar เป็นสีขาว */
+            margin-left: auto; /* ขยับไปทางขวาสุด */
+        }
+        .btn.btn-danger {
+            left: 0px;
+        }
+        /* Content */
+        body {
+            background-color: rgb(255, 255, 255); /* เปลี่ยนสีพื้นหลังของเนื้อหาเป็นสีดำ */
+            color: rgb(0, 0, 0); /* เปลี่ยนสีตัวอักษรของเนื้อหาเป็นสีขาว */
+        }
+    </style>
 </head>
 <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><img src="/images/Logoo.png" alt="Logo"></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/upload">ลงสิ่งของ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/save-offer">บันทึกข้อเสนอ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/notifications">การแจ้งเตือน</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/settings">การตั้งค่า</a>
+                    </li>
+                </ul>
+                <span class="navbar-text me-3">
+                    <%= name %>
+                </span>
+                
+            
+                <ul class="navbar-nav ml-auto"> <!-- ปรับให้ปุ่ม Logout อยู่ทางขวา -->
+                    <li class="nav-item">
+                        <a href="/logout" class="btn btn-danger">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+            
+
+
     <div class="container mt-5">
         <h1 class="text-center mb-4">อััพโหลดสินค้า</h1>
         <form action="/upload" method="POST" enctype="multipart/form-data">
