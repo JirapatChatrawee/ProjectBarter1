@@ -23,7 +23,17 @@
                 <label for="product_image">อัพโหลดรูปภาพ:</label>
                 <input type="file" class="form-control-file" id="product_image" name="product_image" accept="image/*" required>
             </div>
-        
+            <div class="form-group">
+                <label for="product_location">ที่อยู่:</label>
+                <input type="text" class="form-control" id="product_location" name="product_location">
+            </div>
+            <div class="form-group">
+                <label for="product_status">สถานะ:</label>
+                <select class="form-control" id="product_status" name="product_status" required>
+                    <option value="free">Free</option>
+                    <option value="exchange">Exchange</option>
+                </select>
+            </div>
             <button type="submit" class="btn btn-primary btn-block">Upload</button>
         </form>
     </div>

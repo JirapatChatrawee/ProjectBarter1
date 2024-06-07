@@ -98,12 +98,12 @@ app.post('/upload', ifNotLoggedIn, (req, res) => {
                     msg: 'Error: No File Selected!'
                 });
             } else {
-                const { product_name, product_description } = req.body;
+                const { product_name, product_description, product_location, product_status } = req.body;
                 const product_image = `/uploads/${req.file.filename}`;
 
                 dbConnection.execute(
-                    'INSERT INTO products (name, description, image) VALUES (?, ?, ?)',
-                    [product_name, product_description, product_image]
+                    'INSERT INTO products (name, description, image, location, status) VALUES (?, ?, ?, ?, ?)',
+                    [product_name, product_description, product_image, product_location, product_status]
                 ).then(result => {
                     res.redirect('/'); // Redirect ไปยังหน้าโฮม
                 }).catch(err => {
