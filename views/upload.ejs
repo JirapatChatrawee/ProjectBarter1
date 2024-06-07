@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Upload Product</h1>
+        <h1 class="text-center mb-4">อััพโหลดสินค้า</h1>
         <form action="/upload" method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="product_name">ชื่อสินค้า (จำเป็น):</label>
@@ -25,11 +25,12 @@
             </div>
             <div class="form-group">
                 <label for="product_location">ที่อยู่:</label>
-                <input type="text" class="form-control" id="product_location" name="product_location">
+                <input type="text" class="form-control" id="product_location" name="product_location" required>
             </div>
             <div class="form-group">
                 <label for="product_status">สถานะ:</label>
                 <select class="form-control" id="product_status" name="product_status" required>
+                    <option value="">โปรดเลือก</option>
                     <option value="free">Free</option>
                     <option value="exchange">Exchange</option>
                 </select>

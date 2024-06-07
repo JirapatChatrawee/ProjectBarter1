@@ -6,68 +6,95 @@
     <title><%= product.name %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <style>
-        .card-img-top {
-            width: 100%;
-            height: auto;
-        }
-        .navbar-brand img {
-            height: 100px; /* ปรับความสูงของโลโก้ */
-            width: 250px; /* ให้ความกว้างปรับตามสัดส่วนของโลโก้ */
-        }
-        .navbar-nav .nav-link {
-            font-size: 1.5rem; /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
-            margin-left: 2rem; /* ขยับไปทางขวา */
-        }
-        .navbar-text {
-            font-size: 2.5rem; /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
-        }
-        .strong {
-            color: orange; /* สีสถานะเป็นสีส้ม */
-        }
+       
+    .card-img-top {
+        width: 100%;
+        height: auto;
+    }
+    .navbar-brand img {
+        height: 100px;
+        width: 250px;
+    }
+    .navbar-nav .nav-link {
+        font-size: 1.5rem;
+        margin-left: 2rem;
+    }
+    .navbar-text {
+        font-size: 1.5rem;
+    }
+    .card-title {
+        font-size: 2.5rem;
+    }
+    .card-img-top {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+    }
+    .btn-chat {
+        font-size: 1.5rem;
+        background-color: transparent;
+        border: none;
+        color: black;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        margin: 20px;
+    }
+    .btn-chat:hover {
+        background-color: #beb4b4;
+        color: #8d3b05;
+    }
+    .btn-orange {
+        color: #fff;
+        background-color: orange;
+        border-color: orange;
+        font-size: 2rem;
+        width: 150px;
+    }
+    .strong {
+    color: orange;
+    font-size: 1.5rem;
+    font-weight: bold;
+    }
+    .card-textd {
+        color: #868686;
+        font-size: 1.1rem;
+    }
+    .location-text {
+        font-weight: bold;
+        font-size: 1.1rem;
+        
+    }
 
-        .navbar-nav .nav-link {
-            font-size: 1.5rem; /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
-            margin-left: 2rem; /* ขยับไปทางขวา */
-        }
-        .navbar-text {
-            font-size: 1.5rem;
-        }
-        .card-title {
-            font-size: 2.5rem;
-        }
-        .card-img-top {
-            width: 100%; /* ทำให้รูปภาพเต็มกว้างของพื้นที่ที่แสดง */
-            height: auto; /* จัดให้รูปภาพมีสัดส่วนถูกต้อง */
-            max-width: 100%; /* กำหนดขนาดของรูปภาพไม่เกิน 100% ของพื้นที่ที่มีอยู่ */
-}
-
-
-
+    
+</style>
         
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/"><img src="/images/Logo.png" alt="Logo"></a>
+            <a class="navbar-brand" href="/"><img src="/images/Logoo.png" alt="Logo"></a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="upload">ลงสิ่งของ</a>
+                        <a class="nav-link" href="/upload">ลงสิ่งของ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="save-offer">บันทึกข้อเสนอ</a>
+                        <a class="nav-link" href="/save-offer">บันทึกข้อเสนอ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="notifications">การแจ้งเตือน</a>
+                        <a class="nav-link" href="/notifications">การแจ้งเตือน</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="settings">การตั้งค่า</a>
+                        <a class="nav-link" href="/settings">การตั้งค่า</a>
                     </li>
+                    
                 </ul>
                 <span class="navbar-text me-3">
                     <%= name %>
                 </span>
+                
                 <a href="/logout" class="btn btn-danger">Logout</a>
             </div>
         </div>
@@ -84,10 +111,14 @@
                 <div class="card-body">
                     <h5 class="card-title"><%= product.name %></h5>
                     <br><br><br>
-                    <p class="card-text"><%= product.description %></p>
-                    <p class="card-text">Location: <%= product.location %></p>
+                    <p class="card-textd"><%= product.description %></p>
+                    <p class="card-text location-text">Location: <%= product.location %></p>
                     <p class="strong ">สถานะ: <%= product.status %></p>
-                    <a href="/" class="btn btn-primary"  >แชท</a>
+
+                    <a href="/" class="btn btn-orange btn-chat">แชท</a>
+
+
+    
                 </div>
             </div>
         </div>

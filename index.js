@@ -96,8 +96,10 @@ app.post('/upload', ifNotLoggedIn, (req, res) => {
         } else {
             if (req.file == undefined) {
                 res.render('upload', {
-                    msg: 'Error: No File Selected!'
+                    msg: 'Error: Invalid File! Please upload an image file (jpeg, jpg, png, gif).',
+                    old_data: req.body
                 });
+                
             } else {
                 const { product_name, product_description, product_location, product_status } = req.body;
                 const product_image = `/uploads/${req.file.filename}`;
@@ -219,7 +221,7 @@ app.get('/product/:id', (req, res) => {
     dbConnection.execute("SELECT * FROM products WHERE id = ?", [productId])
         .then(([rows]) => {
             if (rows.length > 0) {
-                res.render('product', { product: rows[0], name: req.session.userName }); // ส่งค่า name มาให้กับหน้าเว็บ product
+                res.render('product', { product: rows[0], name: req.session.userName });
             } else {
                 res.status(404).send('Product not found');
             }
@@ -229,6 +231,7 @@ app.get('/product/:id', (req, res) => {
             res.status(500).send('Error occurred while fetching the product.');
         });
 });
+
 
 
 app.get('/register', (req, res) => {
