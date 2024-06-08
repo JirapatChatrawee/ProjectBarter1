@@ -1,12 +1,17 @@
 const express = require('express');
+const http = require('http');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const dbConnection = require('./database');
+const socketIo = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
 app.use(express.urlencoded({ extended: false }));
 
 // Serve static files from the public directory
@@ -32,7 +37,7 @@ const storage = multer.diskStorage({
 // Init upload
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 1000000 },
+    limits: { fileSize: 100000000 }, // 100 MB
     fileFilter: function (req, file, cb) {
         checkFileType(file, cb);
     }
@@ -66,84 +71,56 @@ const ifLoggedIn = (req, res, next) => {
     next();
 };
 
-// Homepage route
+// Root page
 app.get('/', ifNotLoggedIn, (req, res) => {
     console.log('User name:', req.session.userName); // Log the username
-    dbConnection.execute(
-        `SELECT products.*, users.name as user_name FROM products
-         JOIN users ON products.user_id = users.id`
-    )
-    .then(([rows]) => {
-        res.render('home', {
-            name: req.session.userName, // Send the username to the home page
-            products: rows
+    dbConnection.execute("SELECT products.*, users.name AS user_name FROM products JOIN users ON products.user_id = users.id")
+        .then(([rows]) => {
+            res.render('home', {
+                name: req.session.userName,
+                products: rows
+            });
+        })
+        .catch(err => {
+            console.log(err);
         });
-    })
-    .catch(err => {
-        console.log(err);
-    });
-});
-
-// Product details page
-app.get('/product/:id', (req, res) => {
-    const productId = req.params.id;
-    dbConnection.execute(
-        `SELECT products.*, users.name as user_name FROM products
-         JOIN users ON products.user_id = users.id
-         WHERE products.id = ?`,
-        [productId]
-    )
-    .then(([rows]) => {
-        if (rows.length > 0) {
-            res.render('product', { product: rows[0], name: req.session.userName });
-        } else {
-            res.status(404).send('Product not found');
-        }
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).send('Error occurred while fetching the product.');
-    });
 });
 
 // Upload product page
-
 app.get('/upload', ifNotLoggedIn, (req, res) => {
     res.render('upload', {
-        name: req.session.userName // Send the username to the upload page
+        name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า upload.ejs
     });
 });
 
-// Upload product post request
 app.post('/upload', ifNotLoggedIn, (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            res.render('upload', {
-                msg: err
+            return res.render('upload', {
+                msg: err,
+                name: req.session.userName
             });
-        } else {
-            if (req.file == undefined) {
-                res.render('upload', {
-                    msg: 'Error: Invalid File! Please upload an image file (jpeg, jpg, png, gif).',
-                    old_data: req.body
-                });
-
-            } else {
-                const { product_name, product_description, product_location, product_status } = req.body;
-                const product_image = `/uploads/${req.file.filename}`;
-                const user_id = req.session.userID; // Get user_id from session
-
-                dbConnection.execute(
-                    'INSERT INTO products (name, description, image, location, status, user_id) VALUES (?, ?, ?, ?, ?, ?)',
-                    [product_name, product_description, product_image, product_location, product_status, user_id]
-                ).then(result => {
-                    res.redirect('/'); // Redirect to home page
-                }).catch(err => {
-                    console.error(err);
-                    res.send('Error occurred while uploading the product.');
-                });
-            }
         }
+
+        if (!req.file) {
+            return res.render('upload', {
+                msg: 'Error: No File Selected!',
+                name: req.session.userName
+            });
+        }
+
+        const { product_name, product_description, product_location, product_status } = req.body;
+        const product_image = `/uploads/${req.file.filename}`;
+
+        dbConnection.execute(
+            'INSERT INTO products (name, description, image, location, status, user_id) VALUES (?, ?, ?, ?, ?, ?)',
+            [product_name, product_description, product_image, product_location, product_status, req.session.userID]
+        ).then(result => {
+            res.redirect('/');
+        }).catch(err => {
+            console.error(err);
+            res.send('Error occurred while uploading the product.');
+        });
     });
 });
 
@@ -208,11 +185,11 @@ app.post('/', ifLoggedIn, [
     if (validation_result.isEmpty()) {
         dbConnection.execute("SELECT * FROM users WHERE email = ?", [user_email])
             .then(([rows]) => {
-                
+
                 bcrypt.compare(user_pass, rows[0].password).then(compare_result => {
                     if (compare_result === true) {
                         req.session.isLoggedIn = true;
-                        req.session.userID = rows[0].id;
+                        req.session.userID = rows[0].id; // Store userID in session
                         req.session.userName = rows[0].name; // Store username in session
                         res.redirect('/');
                     } else {
@@ -240,35 +217,67 @@ app.post('/', ifLoggedIn, [
 // Logout
 
 app.get('/logout', (req, res) => {
-
+    
     req.session = null;
     res.redirect('/');
 });
 
-// Register page
-app.get('/register', (req, res) => {
-    res.render('register');
+// Product details page
+app.get('/product/:id', (req, res) => {
+    const productId = req.params.id;
+    dbConnection.execute("SELECT products.*, users.name AS user_name FROM products JOIN users ON products.user_id = users.id WHERE products.id = ?", [productId])
+        .then(([rows]) => {
+            if (rows.length > 0) {
+                res.render('product', {
+                    product: rows[0],
+                    name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า product.ejs
+                });
+            } else {
+                res.status(404).send('Product not found');
+            }
+        }).catch(err => {
+            console.error(err);
+            res.status(500).send('Error occurred while fetching the product.');
+        });
 });
 
-// Save offer page
-app.get('/save-offer', (req, res) => {
+// Register page
+app.get('/register', (req, res) => {
+    res.render('register'); // Render the 'register.ejs' template
+});
+
+// Additional routes
+app.get('/save-offer', function (req, res) {
     res.render('save-offer');
 });
 
-// Settings page
-app.get('/settings', (req, res) => {
+app.get('/settings', function (req, res) {
     res.render('settings');
 });
 
-// Notifications page
-app.get('/notifications', (req, res) => {
+app.get('/notifications', function (req, res) {
     res.render('notifications');
 });
 
-// Product page
-app.get('/product', (req, res) => {
-    res.render('product');
+// Socket.io connection
+io.on('connection', (socket) => {
+    console.log('A user connected');
+    const userName = socket.handshake.query.userName;
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+
+    socket.on('chat message', (msg) => {
+        const messageData = {
+            name: userName,
+            message: msg.message // ต้องเข้าถึง property message ใน msg
+        };
+        io.emit('chat message', messageData);
+    });
 });
 
-// Server
-app.listen(3000, () => console.log("Server is running..."));
+
+
+// Start server
+server.listen(3000, () => console.log("Server is running..."));
