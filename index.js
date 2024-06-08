@@ -146,7 +146,7 @@ app.post('/register', ifLoggedIn, [
         bcrypt.hash(user_pass, 12).then((hash_pass) => {
             dbConnection.execute("INSERT INTO users (name, email, password) VALUES(?,?,?)", [user_name, user_email, hash_pass])
                 .then(result => {
-                    res.send('Your account has been created successfully, Now you can <a href="/">Login</a>');
+                    res.send('<div style="font-size: 2rem; text-align: center;">Your account has been created successfully, Now you can <a href="/">Login</a></div>');
                 }).catch(err => {
                     if (err) throw err;
                 });
@@ -246,20 +246,24 @@ app.get('/register', (req, res) => {
     res.render('register'); // Render the 'register.ejs' template
 });
 
-// Additional routes
-app.get('/save-offer', function (req, res) {
-    res.render('save-offer');
-});
+
+
 
 app.get('/settings', function (req, res) {
-    res.render('settings');
+    res.render('settings', {
+        name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
+    });
 });
+
 
 app.get('/notifications', function (req, res) {
-    res.render('notifications');
+    res.render('notifications', {
+        name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
+    });
 });
 
-// Socket.io connection
+
+// Handle chat message
 io.on('connection', (socket) => {
     console.log('A user connected');
     const userName = socket.handshake.query.userName;
@@ -269,14 +273,72 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', (msg) => {
+        const userID = msg.userID; // Assuming userID is sent from client side
         const messageData = {
-            name: userName,
-            message: msg.message // ต้องเข้าถึง property message ใน msg
+            user_id: userID,
+            user_name: userName,
+            message: msg.message
         };
-        io.emit('chat message', messageData);
+        // Save message to database
+        dbConnection.execute(
+            'INSERT INTO chat_messages (user_id, user_name, message) VALUES (?, ?, ?)',
+            [messageData.user_id, messageData.user_name, messageData.message]
+        ).then(result => {
+            io.emit('chat message', messageData);
+        }).catch(err => {
+            console.error(err);
+        });
     });
 });
 
+// Get chat history and render the save-offer page
+app.get('/save-offer', ifNotLoggedIn, (req, res) => {
+    dbConnection.execute(
+        'SELECT * FROM chat_messages WHERE user_id = ? ORDER BY timestamp ASC',
+        [req.session.userID] // เพิ่ม req.session.userID เป็นค่า parameter ใน SQL query
+    ).then(([rows]) => {
+        res.render('save-offer', {
+            name: req.session.userName,
+            messages: rows // Pass the messages data to the save-offer template
+        });
+    }).catch(err => {
+        console.error(err);
+        res.status(500).send('Error occurred while fetching chat history.');
+    });
+});
+
+// สร้างตัวแปร chatHistory เพื่อเก็บประวัติแชท
+let chatHistory = {};
+
+io.on('connection', function(socket) {
+    socket.on('chat message', function(msg) {
+        const userA = msg.name; // ชื่อผู้ใช้ที่ส่งข้อความ
+        const userB = msg.productUser; // ผู้ใช้ที่ถูกส่งถึง
+        const timestamp = new Date().toLocaleString(); // เวลาของข้อความ
+
+        // ตรวจสอบว่าเป็นการสนทนาระหว่าง userA กับ userB หรือ userB กับ userA
+        if (!chatHistory[userA]) {
+            chatHistory[userA] = {};
+        }
+        if (!chatHistory[userB]) {
+            chatHistory[userB] = {};
+        }
+
+        // เพิ่มข้อความลงในประวัติแชทของทั้งสองฝ่าย
+        if (!chatHistory[userA][userB]) {
+            chatHistory[userA][userB] = [];
+        }
+        if (!chatHistory[userB][userA]) {
+            chatHistory[userB][userA] = [];
+        }
+
+        chatHistory[userA][userB].push({ message: msg.message, timestamp: timestamp });
+        chatHistory[userB][userA].push({ message: msg.message, timestamp: timestamp });
+
+        // ส่งข้อความกลับไปยังทุกคนในห้องแชท
+        io.emit('chat message', msg);
+    });
+});
 
 
 // Start server

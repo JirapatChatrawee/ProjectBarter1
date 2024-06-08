@@ -5,14 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
 </head>
 
+<style>
+.background-image {
+    background-image: url('/images/bglog.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-<body>
+.welcome-text {
+    color: #000000; /* รหัสสีสำหรับสีดำเข้ม */
+    text-align: center; /* จัดข้อความให้อยู่ตรงกลางแนวนอน */
+    font-size: 4em; /* ขยายขนาดฟอนต์ */
+}
+
+.login-form {
+    width: 50%; /* ปรับความกว้างของฟอร์ม */
+    height: 330px; /* กำหนดความสูงของฟอร์ม */
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px auto; /* กำหนดระยะห่างด้านบนและด้านล่าง 20px และจัดตำแหน่งกึ่งกลางแนวนอน */
+}
+
+.login-form label {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของ label */
+}
+
+.login-form input {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของ input */
+}
+
+.login-form button {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของปุ่ม */
+}
+
+.btn-primary {
+    font-size: 1.2em; /* ปรับขนาดตัวอักษรเท่ากับปุ่ม Login */
+    padding: 0.5rem 1rem; /* ปรับขนาด padding เพิ่มเติมตามต้องการ */
+}
+
+
+
+</style>
+
+<body class="background-image">
     <div class="container p-5">
-        <h1 class="text-center mb-5 text-uppercase text-muted">Login Page</h1>
+        <h1 class="welcome-text">Welcome To Barter Webside</h1>
         <div class="row">
-            <div class="col-sm-5 bg-light rounded py-3 mx-auto">
+            <div class="col-sm-8 bg-light rounded py-3 mx-auto login-form">
                 <h2 class="text-center">Login Barter</h2>
                 <form action="" method="post">
                     <div class="form-group mt-2">
@@ -23,20 +73,27 @@
                         <label for="_pass">Password</label>
                         <input type="Password" name="user_pass" id="_pass" class="form-control" placeholder="Password">
                     </div>
-
                     <% if (locals.login_errors) {
                         locals.login_errors.forEach(function(error_msg) { %>
                         <div class="alert  alert-danger" role="alert"><%= error_msg %></div>
                         <% });
                         } %>
-
                     <button type="submit" class="mt-2 btn btn-primary">Login</button>
                     <a href="/register" class="btn btn-primary mt-2">Register</a>
-
                 </form>
+
+                
             </div>
         </div>
     </div>
-</body>
 
+    <script>
+        // Show full page LoadingOverlay
+        $.LoadingOverlay("show");
+        // Hide it after 3 seconds
+        setTimeout(function() {
+            $.LoadingOverlay("hide");
+        }, 1000);
+    </script>
+</body>
 </html>
