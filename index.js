@@ -66,31 +66,55 @@ const ifLoggedIn = (req, res, next) => {
     next();
 };
 
-// Root page
+// Homepage route
 app.get('/', ifNotLoggedIn, (req, res) => {
     console.log('User name:', req.session.userName); // Log the username
-    dbConnection.execute("SELECT * FROM products")
-        .then(([rows]) => {
-            res.render('home', {
-                name: req.session.userName, // ส่งค่า name มาให้กับหน้าเว็บ home
-                products: rows
-            });
-        })
-        .catch(err => {
-            console.log(err);
+    dbConnection.execute(
+        `SELECT products.*, users.name as user_name FROM products
+         JOIN users ON products.user_id = users.id`
+    )
+    .then(([rows]) => {
+        res.render('home', {
+            name: req.session.userName, // Send the username to the home page
+            products: rows
         });
+    })
+    .catch(err => {
+        console.log(err);
+    });
 });
 
+// Product details page
+app.get('/product/:id', (req, res) => {
+    const productId = req.params.id;
+    dbConnection.execute(
+        `SELECT products.*, users.name as user_name FROM products
+         JOIN users ON products.user_id = users.id
+         WHERE products.id = ?`,
+        [productId]
+    )
+    .then(([rows]) => {
+        if (rows.length > 0) {
+            res.render('product', { product: rows[0], name: req.session.userName });
+        } else {
+            res.status(404).send('Product not found');
+        }
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).send('Error occurred while fetching the product.');
+    });
+});
 
 // Upload product page
 
 app.get('/upload', ifNotLoggedIn, (req, res) => {
     res.render('upload', {
-        name: req.session.userName // ส่งค่า name ไปยังหน้า upload
+        name: req.session.userName // Send the username to the upload page
     });
 });
 
-
+// Upload product post request
 app.post('/upload', ifNotLoggedIn, (req, res) => {
     upload(req, res, (err) => {
         if (err) {
@@ -103,14 +127,15 @@ app.post('/upload', ifNotLoggedIn, (req, res) => {
                     msg: 'Error: Invalid File! Please upload an image file (jpeg, jpg, png, gif).',
                     old_data: req.body
                 });
-                
+
             } else {
                 const { product_name, product_description, product_location, product_status } = req.body;
                 const product_image = `/uploads/${req.file.filename}`;
+                const user_id = req.session.userID; // Get user_id from session
 
                 dbConnection.execute(
-                    'INSERT INTO products (name, description, image, location, status) VALUES (?, ?, ?, ?, ?)',
-                    [product_name, product_description, product_image, product_location, product_status]
+                    'INSERT INTO products (name, description, image, location, status, user_id) VALUES (?, ?, ?, ?, ?, ?)',
+                    [product_name, product_description, product_image, product_location, product_status, user_id]
                 ).then(result => {
                     res.redirect('/'); // Redirect to home page
                 }).catch(err => {
@@ -183,6 +208,7 @@ app.post('/', ifLoggedIn, [
     if (validation_result.isEmpty()) {
         dbConnection.execute("SELECT * FROM users WHERE email = ?", [user_email])
             .then(([rows]) => {
+                
                 bcrypt.compare(user_pass, rows[0].password).then(compare_result => {
                     if (compare_result === true) {
                         req.session.isLoggedIn = true;
@@ -219,43 +245,30 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// Product details page
-app.get('/product/:id', (req, res) => {
-    const productId = req.params.id;
-    dbConnection.execute("SELECT * FROM products WHERE id = ?", [productId])
-        .then(([rows]) => {
-            if (rows.length > 0) {
-                res.render('product', { product: rows[0], name: req.session.userName });
-            } else {
-                res.status(404).send('Product not found');
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).send('Error occurred while fetching the product.');
-        });
-});
-
-
-
+// Register page
 app.get('/register', (req, res) => {
     res.render('register');
 });
 
+// Save offer page
 app.get('/save-offer', (req, res) => {
     res.render('save-offer');
 });
 
+// Settings page
 app.get('/settings', (req, res) => {
     res.render('settings');
 });
 
+// Notifications page
 app.get('/notifications', (req, res) => {
     res.render('notifications');
 });
 
+// Product page
 app.get('/product', (req, res) => {
     res.render('product');
 });
 
+// Server
 app.listen(3000, () => console.log("Server is running..."));

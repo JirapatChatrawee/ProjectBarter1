@@ -5,70 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= product.name %></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <style>
-       
-    .card-img-top {
-        width: 100%;
-        height: auto;
-    }
-    .navbar-brand img {
-        height: 100px;
-        width: 250px;
-    }
-    .navbar-nav .nav-link {
-        font-size: 1.5rem;
-        margin-left: 2rem;
-    }
-    .navbar-text {
-        font-size: 1.5rem;
-    }
-    .card-title {
-        font-size: 2.5rem;
-    }
-    .card-img-top {
-        width: 100%;
-        height: auto;
-        max-width: 100%;
-    }
-    .btn-chat {
-        font-size: 1.5rem;
-        background-color: transparent;
-        border: none;
-        color: black;
-        position: fixed;
-        bottom: 0;
-        right: 0;
-        margin: 20px;
-    }
-    .btn-chat:hover {
-        background-color: #beb4b4;
-        color: #8d3b05;
-    }
-    .btn-orange {
-        color: #fff;
-        background-color: orange;
-        border-color: orange;
-        font-size: 2rem;
-        width: 150px;
-    }
-    .strong {
-    color: orange;
-    font-size: 1.5rem;
-    font-weight: bold;
-    }
-    .card-textd {
-        color: #868686;
-        font-size: 1.1rem;
-    }
-    .location-text {
-        font-weight: bold;
-        font-size: 1.1rem;
-        
-    }
+    <!-- เพิ่มฟอนต์จาก Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 
-    
-</style>
-        
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+        .card-img-top {
+            width: 100%;
+            height: auto;
+        }
+        .navbar-brand img {
+            height: 100px;
+            width: 250px;
+        }
+        .navbar-nav .nav-link {
+            font-size: 1.5rem;
+            margin-left: 2rem;
+        }
+        .navbar-text {
+            font-size: 1.5rem;
+        }
+        .card-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #343a40; /* สีเข้ม */
+        }
+        .card-img-top {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+        }
+        .btn-chat {
+            font-size: 1.5rem;
+            background-color: transparent;
+            border: none;
+            color: black;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            margin: 20px;
+        }
+        .btn-chat:hover {
+            background-color: #beb4b4;
+            color: #8d3b05;
+        }
+        .btn-orange {
+            color: #fff;
+            background-color: orange;
+            border-color: orange;
+            font-size: 2rem;
+            width: 150px;
+        }
+        .strong {
+            color: orange;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .card-textd {
+            color: #868686;
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+        .location-text {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #495057; /* สีเข้ม */
+        }
+        .font-weight-bold {
+            font-weight: 700;
+        }
+        .text-dark {
+            color: #343a40 !important;
+        }
     </style>
 </head>
 <body>
@@ -89,12 +99,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="/settings">การตั้งค่า</a>
                     </li>
-                    
+ 
                 </ul>
                 <span class="navbar-text me-3">
                     <%= name %>
                 </span>
-                
+  
                 <a href="/logout" class="btn btn-danger">Logout</a>
             </div>
         </div>
@@ -113,12 +123,12 @@
                     <br><br><br>
                     <p class="card-textd"><%= product.description %></p>
                     <p class="card-text location-text">Location: <%= product.location %></p>
-                    <p class="strong ">สถานะ: <%= product.status %></p>
-
+                    <p class="strong">สถานะ: <%= product.status %></p>
+                    <p class="font-weight-bold text-dark">ลงสินค้าโดย <%= product.user_name %></p>
                     <a href="/" class="btn btn-orange btn-chat">แชท</a>
 
-
-    
+ 
+                    
                 </div>
             </div>
         </div>
