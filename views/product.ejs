@@ -217,27 +217,61 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
-       document.addEventListener('DOMContentLoaded', function () {
-    const userName = '<%= name %>';
-    const productUser = '<%= product.user_name %>';
-    const userID = '<%= userID %>'; // แทรกค่า userID เป็น string
-    const chatButton = document.querySelector('.btn-chat');
-    const chatWindow = document.querySelector('.chat-window');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInput = document.getElementById('chat-input');
-    const sendMessageButton = document.getElementById('send-message');
-    const socket = io({
-        query: `userName=${userName}`
-    });
+        document.addEventListener('DOMContentLoaded', function () {
+            const userName = '<%= name %>';
+            const productUser = '<%= product.user_name %>';
+            const userID = '<%= userID %>'; // แทรกค่า userID เป็น string
+            const chatButton = document.querySelector('.btn-chat');
+            const chatWindow = document.querySelector('.chat-window');
+            const chatMessages = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const sendMessageButton = document.getElementById('send-message');
+            const socket = io({
+                query: `userName=${userName}`
+            });
 
-    chatButton.addEventListener('click', () => {
-        chatWindow.style.display = 'flex';
-        chatWindow.dataset.productUser = productUser;
-        fetch(`/chat-history/${productUser}`)
-            .then(response => response.json())
-            .then(data => {
-                chatMessages.innerHTML = '';
-                data.forEach(msg => {
+            chatButton.addEventListener('click', () => {
+                if (chatWindow.style.display === 'flex') {
+                    chatWindow.style.display = 'none';
+                } else {
+                    chatWindow.style.display = 'flex';
+                    chatWindow.dataset.productUser = productUser;
+                    fetch(`/chat-history/${productUser}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            chatMessages.innerHTML = '';
+                            data.forEach(msg => {
+                                const messageElement = document.createElement('div');
+                                messageElement.classList.add('chat-message');
+                                if (msg.user_name === userName) {
+                                    messageElement.classList.add('user');
+                                } else {
+                                    messageElement.classList.add('other');
+                                }
+                                messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
+                                chatMessages.appendChild(messageElement);
+                            });
+                            // Scroll to the bottom of chat
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        })
+                        .catch(error => console.error('Error fetching chat history:', error));
+                }
+            });
+
+            sendMessageButton.addEventListener('click', () => {
+                const message = chatInput.value;
+                if (message.trim() !== '') {
+                    socket.emit('chat message', {
+                        message,
+                        productUser,
+                        userID: userID // ใช้ค่าที่ถูกแทรกจาก EJS
+                    });
+                    chatInput.value = '';
+                }
+            });
+
+            socket.on('chat message', (msg) => {
+                if ((msg.user_name === userName && msg.product_user === productUser) || (msg.user_name === productUser && msg.product_user === userName)) {
                     const messageElement = document.createElement('div');
                     messageElement.classList.add('chat-message');
                     if (msg.user_name === userName) {
@@ -247,41 +281,10 @@
                     }
                     messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
                     chatMessages.appendChild(messageElement);
-                });
-                // Scroll to the bottom of chat
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            })
-            .catch(error => console.error('Error fetching chat history:', error));
-    });
-
-    sendMessageButton.addEventListener('click', () => {
-        const message = chatInput.value;
-        if (message.trim() !== '') {
-            socket.emit('chat message', {
-                message,
-                productUser,
-                userID: userID // ใช้ค่าที่ถูกแทรกจาก EJS
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
             });
-            chatInput.value = '';
-        }
-    });
-
-    socket.on('chat message', (msg) => {
-        if ((msg.user_name === userName && msg.product_user === productUser) || (msg.user_name === productUser && msg.product_user === userName)) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message');
-            if (msg.user_name === userName) {
-                messageElement.classList.add('user');
-            } else {
-                messageElement.classList.add('other');
-            }
-            messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    });
-});
-
+        });
     </script>
 </body>
 
