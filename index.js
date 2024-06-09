@@ -280,14 +280,15 @@ io.on('connection', (socket) => {
             user_name: userName,
             message: msg.message,
             product_user: msg.productUser,
-            timestamp: new Date() // Add timestamp to message data
+            timestamp: new Date(), // Add timestamp to message data
+            time: new Date().toLocaleTimeString()
         };
         // Save message to database
         dbConnection.execute(
             'INSERT INTO chat_messages (user_id, user_name, message, product_user, timestamp) VALUES (?, ?, ?, ?, ?)',
             [messageData.user_id, messageData.user_name, messageData.message, messageData.product_user, messageData.timestamp]
         ).then(result => {
-            io.emit('chat message', messageData);
+            io.emit('chat message', messageData); // ส่ง messageData ที่มีข้อมูลเวลาไปยังไคลเอนต์
         }).catch(err => {
             console.error(err);
         });
@@ -311,13 +312,19 @@ app.get('/save-offer', ifNotLoggedIn, (req, res) => {
 });
 
 // Get chat history for specific user and product user
+
 app.get('/chat-history/:productUser', ifNotLoggedIn, (req, res) => {
     const productUser = req.params.productUser;
     dbConnection.execute(
         'SELECT * FROM chat_messages WHERE (user_name = ? AND product_user = ?) OR (user_name = ? AND product_user = ?) ORDER BY timestamp ASC',
         [req.session.userName, productUser, productUser, req.session.userName]
     ).then(([rows]) => {
-        res.json(rows); // Return chat history as JSON
+        // Format timestamp before sending to client
+        const messages = rows.map(row => ({
+            ...row,
+            time: new Date(row.timestamp).toLocaleString()
+        }));
+        res.json(messages);
     }).catch(err => {
         console.error(err);
         res.status(500).send('Error occurred while fetching chat history.');
