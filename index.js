@@ -225,12 +225,14 @@ app.get('/logout', (req, res) => {
 // Product details page
 app.get('/product/:id', (req, res) => {
     const productId = req.params.id;
+    const userID = req.session.userID; // ดึง userID จากเซสชัน
     dbConnection.execute("SELECT products.*, users.name AS user_name FROM products JOIN users ON products.user_id = users.id WHERE products.id = ?", [productId])
         .then(([rows]) => {
             if (rows.length > 0) {
                 res.render('product', {
                     product: rows[0],
-                    name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า product.ejs
+                    name: req.session.userName, // ส่งค่าชื่อผู้ใช้ไปยังหน้า product.ejs
+                    userID: userID // ส่งค่า userID ไปยังหน้า product.ejs
                 });
             } else {
                 res.status(404).send('Product not found');
@@ -240,7 +242,6 @@ app.get('/product/:id', (req, res) => {
             res.status(500).send('Error occurred while fetching the product.');
         });
 });
-
 // Register page
 app.get('/register', (req, res) => {
     res.render('register'); // Render the 'register.ejs' template
@@ -277,12 +278,14 @@ io.on('connection', (socket) => {
         const messageData = {
             user_id: userID,
             user_name: userName,
-            message: msg.message
+            message: msg.message,
+            product_user: msg.productUser,
+            timestamp: new Date() // Add timestamp to message data
         };
         // Save message to database
         dbConnection.execute(
-            'INSERT INTO chat_messages (user_id, user_name, message) VALUES (?, ?, ?)',
-            [messageData.user_id, messageData.user_name, messageData.message]
+            'INSERT INTO chat_messages (user_id, user_name, message, product_user, timestamp) VALUES (?, ?, ?, ?, ?)',
+            [messageData.user_id, messageData.user_name, messageData.message, messageData.product_user, messageData.timestamp]
         ).then(result => {
             io.emit('chat message', messageData);
         }).catch(err => {
@@ -306,6 +309,21 @@ app.get('/save-offer', ifNotLoggedIn, (req, res) => {
         res.status(500).send('Error occurred while fetching chat history.');
     });
 });
+
+// Get chat history for specific user and product user
+app.get('/chat-history/:productUser', ifNotLoggedIn, (req, res) => {
+    const productUser = req.params.productUser;
+    dbConnection.execute(
+        'SELECT * FROM chat_messages WHERE (user_name = ? AND product_user = ?) OR (user_name = ? AND product_user = ?) ORDER BY timestamp ASC',
+        [req.session.userName, productUser, productUser, req.session.userName]
+    ).then(([rows]) => {
+        res.json(rows); // Return chat history as JSON
+    }).catch(err => {
+        console.error(err);
+        res.status(500).send('Error occurred while fetching chat history.');
+    });
+});
+
 
 // สร้างตัวแปร chatHistory เพื่อเก็บประวัติแชท
 let chatHistory = {};
