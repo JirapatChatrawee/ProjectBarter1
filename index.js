@@ -5,6 +5,7 @@ const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
+const fs = require('fs');
 const dbConnection = require('./database');
 const socketIo = require('socket.io');
 
@@ -12,11 +13,10 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+
 app.use(express.urlencoded({ extended: false }));
-
-// Serve static files from the public directory
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -26,35 +26,20 @@ app.use(cookieSession({
     maxAge: 3600 * 1000  // 1hr
 }));
 
-// Set storage engine
+// Set up multer for image uploads
 const storage = multer.diskStorage({
-    destination: './public/uploads',
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, 'public/uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir);
+        }
+        cb(null, uploadDir);
+    },
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
-
-// Init upload
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 100000000 }, // 100 MB
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
-}).single('product_image');
-
-// Check file type
-function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb('Error: Images Only!');
-    }
-}
+const upload = multer({ storage: storage });
 
 // Middleware to check if user is logged in
 const ifNotLoggedIn = (req, res, next) => {
@@ -87,42 +72,36 @@ app.get('/', ifNotLoggedIn, (req, res) => {
 });
 
 // Upload product page
+// Upload product page
 app.get('/upload', ifNotLoggedIn, (req, res) => {
     res.render('upload', {
-        name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า upload.ejs
+        name: req.session.userName
     });
 });
 
-app.post('/upload', ifNotLoggedIn, (req, res) => {
-    upload(req, res, (err) => {
-        if (err) {
-            return res.render('upload', {
-                msg: err,
-                name: req.session.userName
-            });
-        }
-
-        if (!req.file) {
-            return res.render('upload', {
-                msg: 'Error: No File Selected!',
-                name: req.session.userName
-            });
-        }
-
-        const { product_name, product_description, product_location, product_status } = req.body;
-        const product_image = `/uploads/${req.file.filename}`;
-
-        dbConnection.execute(
-            'INSERT INTO products (name, description, image, location, status, user_id) VALUES (?, ?, ?, ?, ?, ?)',
-            [product_name, product_description, product_image, product_location, product_status, req.session.userID]
-        ).then(result => {
-            res.redirect('/');
-        }).catch(err => {
-            console.error(err);
-            res.send('Error occurred while uploading the product.');
+app.post('/upload', ifNotLoggedIn, upload.single('product_image'), (req, res) => {
+    if (!req.file) {
+        return res.render('upload', {
+            msg: 'Error: No File Selected!',
+            name: req.session.userName
         });
+    }
+
+    const { product_name, product_description, product_location, product_status } = req.body;
+    const product_image = `/uploads/${req.file.filename}`;
+
+    dbConnection.execute(
+        'INSERT INTO products (name, description, image, location, status, user_id) VALUES (?, ?, ?, ?, ?, ?)',
+        [product_name, product_description, product_image, product_location, product_status, req.session.userID]
+    ).then(result => {
+        res.redirect('/');
+    }).catch(err => {
+        console.error(err);
+        res.send('Error occurred while uploading the product.');
     });
 });
+
+
 
 // Register page
 app.post('/register', ifLoggedIn, [
@@ -250,11 +229,87 @@ app.get('/register', (req, res) => {
 
 
 
-app.get('/settings', function (req, res) {
-    res.render('settings', {
-        name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
+// Settings page
+app.get('/settings', ifNotLoggedIn, (req, res) => {
+    const userID = req.session.userID;
+
+    const userQuery = 'SELECT * FROM users WHERE id = ?';
+    const settingsQuery = 'SELECT * FROM settinguser WHERE user_id = ?';
+
+    Promise.all([
+        dbConnection.execute(userQuery, [userID]),
+        dbConnection.execute(settingsQuery, [userID])
+    ]).then(([userRows, settingsRows]) => {
+        if (userRows[0].length > 0) {
+            const user = userRows[0][0];
+            const settings = settingsRows[0][0] || {};
+            res.render('settings', {
+                name: req.session.userName,
+                user: user,
+                settings: settings
+            });
+        } else {
+            res.status(404).send('User not found');
+        }
+    }).catch(err => {
+        console.error(err);
+        res.status(500).send('Error occurred while fetching user details.');
     });
 });
+
+
+
+// POST /settings - Update user settings
+app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) => {
+    const userID = req.session.userID;
+    const { name, email, phone, gender, address_line1, address_line2, city, state, postal_code, country } = req.body;
+
+    let profile_image = null;
+    if (req.file) {
+        profile_image = `/uploads/${req.file.filename}`;
+    }
+
+    // Update user table
+    const userUpdateQuery = 'UPDATE users SET name = ?, email = ?, phone = ?, gender = ?, profile_image = ? WHERE id = ?';
+
+    // Check if settings exist for the user
+    const settingsSelectQuery = 'SELECT * FROM settinguser WHERE user_id = ?';
+    const settingsInsertQuery = `
+        INSERT INTO settinguser (user_id, address_line1, address_line2, city, state, postal_code, country, phone ,gender)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const settingsUpdateQuery = `
+        UPDATE settinguser
+        SET address_line1 = ?, address_line2 = ?, city = ?, state = ?, postal_code = ?, country = ?, phone = ?, gender = ?
+        WHERE user_id = ?
+    `;
+
+    dbConnection.execute(settingsSelectQuery, [userID])
+        .then(([settingsRows]) => {
+            if (settingsRows.length > 0) {
+                // Update existing settings
+                return dbConnection.execute(settingsUpdateQuery, [address_line1, address_line2, city, state, postal_code, country, phone, gender, userID]);
+            } else {
+                // Insert new settings
+                return dbConnection.execute(settingsInsertQuery, [userID, address_line1, address_line2, city, state, postal_code, country, phone, gender]);
+            }
+        })
+        .then(() => {
+            // Update user details
+            return dbConnection.execute(userUpdateQuery, [name, email, phone,gender, profile_image, userID]);
+        })
+        .then(() => {
+            // Optionally, update the session with the new name
+            req.session.userName = name;
+            res.redirect('/settings'); // Redirect to settings page after saving
+        })
+        .catch(err => {
+            console.error(err);
+            // Handle errors: log the error, notify the user, etc.
+            res.status(500).send('Error occurred while updating user details.');
+        });
+});
+
 
 
 app.get('/notifications', function (req, res) {
@@ -328,6 +383,33 @@ app.get('/chat-history/:productUser', ifNotLoggedIn, (req, res) => {
     }).catch(err => {
         console.error(err);
         res.status(500).send('Error occurred while fetching chat history.');
+    });
+});
+
+
+app.post('/upload-image', upload.single('image'), (req, res) => {
+    const tempPath = req.file.path;
+    const targetPath = path.join(__dirname, 'public/uploads/', `${Date.now()}-${req.file.originalname}`);
+
+    fs.rename(tempPath, targetPath, err => {
+        if (err) return res.status(500).json({ success: false, error: err });
+
+        const imageUrl = `/uploads/${path.basename(targetPath)}`;
+        res.json({ success: true, url: imageUrl });
+    });
+});
+
+app.post('/save-image-message', (req, res) => {
+    const { imageUrl, userID, productUser } = req.body;
+    const timestamp = new Date().toLocaleTimeString();
+
+    dbConnection.execute(
+        'INSERT INTO chat_messages (user_id, user_name, product_user, timestamp, image) VALUES (?, ?, ?, ?, ?)',
+        [userID, userName, productUser, new Date(), imageUrl]
+    ).then(result => {
+        res.json({ success: true });
+    }).catch(err => {
+        res.status(500).json({ success: false, error: err });
     });
 });
 
