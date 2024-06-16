@@ -16,8 +16,8 @@
     }
 
     .card-img-top {
-      width: 100%;
-      height: auto;
+
+      border-bottom: 1px solid #eee;
     }
 
     .navbar-brand img {
@@ -35,9 +35,9 @@
     }
 
     .card-title {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #343a40;
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
     }
 
     .btn-chat {
@@ -57,11 +57,12 @@
     }
 
     .btn-orange {
-      color: #fff;
-      background-color: orange;
-      border-color: orange;
-      font-size: 2rem;
-      width: 150px;
+      background-color: #f39c12;
+      color: white;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 5px;
+      cursor: pointer;
     }
 
     .strong {
@@ -74,12 +75,22 @@
       color: #868686;
       font-size: 1.1rem;
       font-weight: 300;
+      margin-top: -2rem;
+      /* ลด margin-top เพื่อลดช่องว่างด้านบน */
     }
 
     .location-text {
       font-weight: bold;
       font-size: 1.1rem;
       color: #495057;
+    }
+
+    .card-textd,
+    .location-text,
+    .strong,
+    .font-weight-bold {
+      margin-bottom: 1rem;
+      font-size: 1rem;
     }
 
     .chat-window {
@@ -95,10 +106,12 @@
     }
 
     .chat-header {
-      background: #343a40;
-      color: #fff;
       padding: 10px;
-      cursor: pointer;
+      background: #f39c12;
+      color: white;
+      border-radius: 10px 10px 0 0;
+      text-align: center;
+      font-weight: bold;
     }
 
     .chat-messages {
@@ -166,6 +179,28 @@
     .hidden-file-input {
       display: none;
     }
+
+    .img-pro {
+      width: 100px;
+      /* กำหนดความกว้าง */
+      height: 100px;
+      /* กำหนดความสูง */
+      object-fit: cover;
+      /* ให้รูปภาพคงสัดส่วนและครอบคลุมขนาดที่กำหนด */
+      border-radius: 50%;
+      /* ถ้าต้องการให้รูปภาพเป็นวงกลม */
+      margin: 10px auto;
+      /* กำหนดระยะห่างด้านนอกและจัดกึ่งกลาง */
+      margin-left: 0px;
+    }
+
+    .container {
+      margin-top: 3rem;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
   </style>
 </head>
 
@@ -210,7 +245,17 @@
           <p class="card-textd"><%= product.description %></p>
           <p class="card-text location-text">Location: <%= product.location %></p>
           <p class="strong">สถานะ: <%= product.status %></p>
-          <p class="font-weight-bold text-dark">ลงสินค้าโดย <%= product.user_name %></p>
+      
+            <img src="<%= product.profile_image %>" class="card-img-top img-pro" alt="<%= product.profile_image %>">
+        </a>
+        
+        <p class="font-weight-bold text-dark">ลงสินค้าโดย 
+          <a href="/view-user/<%= product.user_id %>"><%= product.user_name %></a>
+      </p>
+      
+
+
+
           <% if (name !== product.user_name) { %>
           <button class="btn btn-orange btn-chat" data-product-user="<%= product.user_name %>">แชท</button>
           <% } %>
@@ -223,9 +268,9 @@
     <div class="chat-header"> ลงสินค้าโดย <span id="chat-product-user"><%= product.user_name %></span></div>
     <div class="chat-messages" id="chat-messages"></div>
     <div class="chat-input">
-        <input type="text" id="chat-input" placeholder="Type a message...">
-        <button id="send-message">Send</button>
-   
+      <input type="text" id="chat-input" placeholder="Type a message...">
+      <button id="send-message">Send</button>
+
     </div>
   </div>
 
@@ -234,121 +279,121 @@
   <script src="/socket.io/socket.io.js"></script>
 
   <script>
-   document.addEventListener('DOMContentLoaded', function() {
-    const userName = '<%= name %>';
-    const productUser = '<%= product.user_name %>';
-    const userID = '<%= userID %>';
-    const chatButton = document.querySelector('.btn-chat');
-    const chatWindow = document.querySelector('.chat-window');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatInput = document.getElementById('chat-input');
-    const sendMessageButton = document.getElementById('send-message');
-    const uploadButton = document.getElementById('upload-button');
-    const fileInput = document.getElementById('file-input');
-    const socket = io({
+    document.addEventListener('DOMContentLoaded', function() {
+      const userName = '<%= name %>';
+      const productUser = '<%= product.user_name %>';
+      const userID = '<%= userID %>';
+      const chatButton = document.querySelector('.btn-chat');
+      const chatWindow = document.querySelector('.chat-window');
+      const chatMessages = document.getElementById('chat-messages');
+      const chatInput = document.getElementById('chat-input');
+      const sendMessageButton = document.getElementById('send-message');
+      const uploadButton = document.getElementById('upload-button');
+      const fileInput = document.getElementById('file-input');
+      const socket = io({
         query: `userName=${userName}`
-    });
+      });
 
-    chatButton.addEventListener('click', () => {
+      chatButton.addEventListener('click', () => {
         if (chatWindow.style.display === 'flex') {
-            chatWindow.style.display = 'none';
+          chatWindow.style.display = 'none';
         } else {
-            chatWindow.style.display = 'flex';
-            chatWindow.dataset.productUser = productUser;
-            fetch(`/chat-history/${productUser}`)
-                .then(response => response.json())
-                .then(data => {
-                    chatMessages.innerHTML = '';
-                    data.forEach(msg => {
-                        const messageElement = document.createElement('div');
-                        messageElement.classList.add('chat-message');
-                        if (msg.user_name === userName) {
-                            messageElement.classList.add('user');
-                        } else {
-                            messageElement.classList.add('other');
-                        }
-                        messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
-                        chatMessages.appendChild(messageElement);
-                    });
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                })
-                .catch(error => console.error('Error fetching chat history:', error));
+          chatWindow.style.display = 'flex';
+          chatWindow.dataset.productUser = productUser;
+          fetch(`/chat-history/${productUser}`)
+            .then(response => response.json())
+            .then(data => {
+              chatMessages.innerHTML = '';
+              data.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('chat-message');
+                if (msg.user_name === userName) {
+                  messageElement.classList.add('user');
+                } else {
+                  messageElement.classList.add('other');
+                }
+                messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
+                chatMessages.appendChild(messageElement);
+              });
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch(error => console.error('Error fetching chat history:', error));
         }
-    });
+      });
 
-    sendMessageButton.addEventListener('click', () => {
+      sendMessageButton.addEventListener('click', () => {
         const message = chatInput.value;
         if (message.trim() !== '') {
-            socket.emit('chat message', {
-                message,
-                productUser,
-                userID: userID
-            });
-            chatInput.value = '';
+          socket.emit('chat message', {
+            message,
+            productUser,
+            userID: userID
+          });
+          chatInput.value = '';
         }
-    });
+      });
 
-    socket.on('chat message', (msg) => {
+      socket.on('chat message', (msg) => {
         if ((msg.user_name === userName && msg.product_user === productUser) || (msg.user_name === productUser && msg.product_user === userName)) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message');
-            if (msg.user_name === userName) {
-                messageElement.classList.add('user');
-            } else {
-                messageElement.classList.add('other');
-            }
-            messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+          const messageElement = document.createElement('div');
+          messageElement.classList.add('chat-message');
+          if (msg.user_name === userName) {
+            messageElement.classList.add('user');
+          } else {
+            messageElement.classList.add('other');
+          }
+          messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
+          chatMessages.appendChild(messageElement);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-    });
+      });
 
-    uploadButton.addEventListener('click', () => {
+      uploadButton.addEventListener('click', () => {
         fileInput.click();
-    });
+      });
 
-    fileInput.addEventListener('change', () => {
+      fileInput.addEventListener('change', () => {
         const file = fileInput.files[0];
         if (file) {
-            const formData = new FormData();
-            formData.append('image', file);
-            fetch('/upload-image', {
-                method: 'POST',
-                body: formData
+          const formData = new FormData();
+          formData.append('image', file);
+          fetch('/upload-image', {
+              method: 'POST',
+              body: formData
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    socket.emit('chat image', {
-                        imageUrl: data.url,
-                        productUser,
-                        userID: userID
-                    });
-                }
+              if (data.success) {
+                socket.emit('chat image', {
+                  imageUrl: data.url,
+                  productUser,
+                  userID: userID
+                });
+              }
             })
             .catch(error => console.error('Error uploading image:', error));
         }
-    });
+      });
 
-     socket.on('chat image', (msg) => {
+      socket.on('chat image', (msg) => {
         if ((msg.user_name === userName && msg.product_user === productUser) || (msg.user_name === productUser && msg.product_user === userName)) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message');
-            if (msg.user_name === userName) {
-                messageElement.classList.add('user');
-            } else {
-                messageElement.classList.add('other');
-            }
-            const imgElement = document.createElement('img');
-            imgElement.src = msg.imageUrl;
-            imgElement.style.maxWidth = '100%';
-            messageElement.appendChild(imgElement);
-            messageElement.innerHTML += `<br><small>${msg.time}</small>`;
-            chatMessages.appendChild(messageElement);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+          const messageElement = document.createElement('div');
+          messageElement.classList.add('chat-message');
+          if (msg.user_name === userName) {
+            messageElement.classList.add('user');
+          } else {
+            messageElement.classList.add('other');
+          }
+          const imgElement = document.createElement('img');
+          imgElement.src = msg.imageUrl;
+          imgElement.style.maxWidth = '100%';
+          messageElement.appendChild(imgElement);
+          messageElement.innerHTML += `<br><small>${msg.time}</small>`;
+          chatMessages.appendChild(messageElement);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
         }
+      });
     });
-});
   </script>
 </body>
 

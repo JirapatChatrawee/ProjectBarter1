@@ -4,10 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-    crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/set.css"> <!-- Link to your set.css file -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/set.css"> <!-- Link to your set.css file -->
   <title>Document</title>
 </head>
 
@@ -40,66 +38,75 @@
   </nav>
 
   <!DOCTYPE html>
-<html lang="en">
-<head>
+  <html lang="en">
+
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-    crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/set.css"> <!-- Link to your set.css file -->
     <title>Settings</title>
-</head>
-<body>
-  <div class="container">
-    <h2>ข้อมูลของฉัน</h2>
-    <p>จัดการข้อมูลส่วนตัวของคุณเพื่อความปลอดภัยของบัญชีผู้ใช้นี้</p>
-    <form action="/settings" method="post">
+  </head>
+
+  <body>
+    <div class="container">
+
+      <h2 style="text-align: center;">ข้อมูลของฉัน</h2>
+      <p style="text-align: center;">จัดการข้อมูลส่วนตัวของคุณเพื่อความปลอดภัยของบัญชีผู้ใช้นี้</p>
+
+      <form action="/settings" method="post" enctype="multipart/form-data">
+
+
+      
+      <!-- File upload section -->
+      <div class="profile-image-container">
+        <input type="hidden" name="existing_profile_image" value="<%= user.profile_image %>">
+        <img id="profileImagePreview" src="<%= user.profile_image ? user.profile_image : '/path/to/default/image.png' %>" alt="Profile Image">
+        <input type="file" id="profile_image" name="profile_image" onchange="previewProfileImage(event)">
+      </div>
+
+
+
         <label for="username">ชื่อผู้ใช้</label>
         <input type="text" id="username" name="username" value="<%= user.name %>" readonly>
 
         <label for="name">ชื่อ</label>
-        <input type="text" id="name" name="name" value="<%= user.name %>">
+        <input type="text" id="name" name="name" value="<%= user.name %>" readonly>
 
         <label for="email">อีเมล</label>
-        <input type="email" id="email" name="email" value="<%= user.email %>">
+        <input type="email" id="email" name="email" value="<%= user.email %>" readonly>
 
-       
-      <label for="phone">หมายเลขโทรศัพท์</label>
-      <input type="text" id="phone" name="phone" value="<%= user.phone %>">
-
+        <label for="phone">หมายเลขโทรศัพท์</label>
+        <input type="text" id="phone" name="phone" value="<%= user.phone %>">
 
         <label for="gender">เพศ</label>
         <div class="gender-options">
-            <input type="radio" id="male" name="gender" value="male" <%= user.gender === 'male' ? 'checked' : '' %>>
-            <label for="male">ชาย</label>
-            <input type="radio" id="female" name="gender" value="female" <%= user.gender === 'female' ? 'checked' : '' %>>
-            <label for="female">หญิง</label>
-            <input type="radio" id="other" name="gender" value="other" <%= user.gender === 'other' ? 'checked' : '' %>>
-            <label for="other">อื่น ๆ</label>
+          <input type="radio" id="male" name="gender" value="male" <%= user.gender === 'male' ? 'checked' : '' %>>
+          <label for="male">ชาย</label>
+          <input type="radio" id="female" name="gender" value="female" <%= user.gender === 'female' ? 'checked' : '' %>>
+          <label for="female">หญิง</label>
+          <input type="radio" id="other" name="gender" value="other" <%= user.gender === 'other' ? 'checked' : '' %>>
+          <label for="other">อื่น ๆ</label>
         </div>
 
         <label for="dob">วัน/เดือน/ปี เกิด</label>
         <div class="dob">
-            <select id="day" name="day">
-                <!-- Add options dynamically based on days -->
-                <% for (let i = 1; i <= 31; i++) { %>
-                <option value="<%= i %>" <%= user.dob_day == i ? 'selected' : '' %>><%= i %></option>
-                <% } %>
-            </select>
-            <select id="month" name="month">
-                <!-- Add options dynamically based on months -->
-                <% const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']; %>
-                <% months.forEach((month, index) => { %>
-                <option value="<%= index + 1 %>" <%= user.dob_month == index + 1 ? 'selected' : '' %>><%= month %></option>
-                <% }) %>
-            </select>
-            <select id="year" name="year">
-                <!-- Add options dynamically based on years -->
-                <% for (let i = 1920; i <= new Date().getFullYear(); i++) { %>
-                <option value="<%= i %>" <%= user.dob_year == i ? 'selected' : '' %>><%= i %></option>
-                <% } %>
-            </select>
+          <select id="day" name="day">
+            <% for (let i = 1; i <= 31; i++) { %>
+            <option value="<%= i %>" <%= user.dob_day == i ? 'selected' : '' %>><%= i %></option>
+            <% } %>
+          </select>
+          <select id="month" name="month">
+            <% const months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']; %>
+            <% months.forEach((month, index) => { %>
+            <option value="<%= index + 1 %>" <%= user.dob_month == index + 1 ? 'selected' : '' %>><%= month %></option>
+            <% }) %>
+          </select>
+          <select id="year" name="year">
+            <% for (let i = 1920; i <= new Date().getFullYear(); i++) { %>
+            <option value="<%= i %>" <%= user.dob_year == i ? 'selected' : '' %>><%= i %></option>
+            <% } %>
+          </select>
         </div>
 
         <!-- Address fields -->
@@ -109,7 +116,6 @@
         <label for="address_line2">ที่อยู่บรรทัดที่ 2</label>
         <input type="text" id="address_line2" name="address_line2" value="<%= settings.address_line2 %>">
 
-        <!-- Corrected name attribute for zipcode -->
         <label for="zipcode">รหัสไปรษณีย์</label>
         <input type="text" id="zipcode" name="postal_code" value="<%= settings.postal_code %>">
 
@@ -122,34 +128,38 @@
         <label for="country">ประเทศ</label>
         <input type="text" id="country" name="country" value="<%= settings.country %>">
 
-        <!-- File upload section -->
-        <input type="file" name="profile_image">
-    
-        <!-- Submit button -->
-        <button type="submit">Save</button>
-    </form>
-</div>
-
-<!-- Display uploaded image -->
-<% if (user.profile_image) { %>
-  <img src="<%= user.profile_image %>" alt="Profile Image" style="width: 100px; height: 100px;">
-<% } %>
 
 
+        <script>
+          function previewProfileImage(event) {
+            const input = event.target;
+            const reader = new FileReader();
+            reader.onload = function() {
+              const dataURL = reader.result;
+              const output = document.getElementById('profileImagePreview');
+              output.src = dataURL;
+            };
+            reader.readAsDataURL(input.files[0]);
+          }
+        </script>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js">
-  </script>
-  <script>
-    $(document).ready(function () {
-      setTimeout(function () {
-        $('.loader').addClass('hidden'); // เพิ่มคลาส hidden เพื่อซ่อนโลโก้
-        $('.navbar').removeClass('hidden'); // ลบคลาส hidden เพื่อแสดงแถบนำทาง
-      }, 2000); // 2 วินาที (2000 มิลลิวินาที)
-    });
-  </script>
-</body>
+        <div class="form-actions">
+          <button type="submit" class="save-button">Save</button>
+        </div>
+      </form>
 
-</html>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js">
+      </script>
+      <script>
+        $(document).ready(function() {
+          setTimeout(function() {
+            $('.loader').addClass('hidden'); // เพิ่มคลาส hidden เพื่อซ่อนโลโก้
+            $('.navbar').removeClass('hidden'); // ลบคลาส hidden เพื่อแสดงแถบนำทาง
+          }, 2000); // 2 วินาที (2000 มิลลิวินาที)
+        });
+      </script>
+  </body>
+  </div>
+
+  </html>

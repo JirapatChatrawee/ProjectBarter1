@@ -13,10 +13,10 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -40,6 +40,7 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage: storage });
+
 
 // Middleware to check if user is logged in
 const ifNotLoggedIn = (req, res, next) => {
@@ -205,12 +206,15 @@ app.get('/logout', (req, res) => {
 app.get('/product/:id', (req, res) => {
     const productId = req.params.id;
     const userID = req.session.userID; // ดึง userID จากเซสชัน
-    dbConnection.execute("SELECT products.*, users.name AS user_name FROM products JOIN users ON products.user_id = users.id WHERE products.id = ?", [productId])
+    dbConnection.execute("SELECT products.*, users.name AS user_name, users.profile_image FROM products JOIN users ON products.user_id = users.id WHERE products.id = ?", [productId])
         .then(([rows]) => {
             if (rows.length > 0) {
                 res.render('product', {
                     product: rows[0],
                     name: req.session.userName, // ส่งค่าชื่อผู้ใช้ไปยังหน้า product.ejs
+                    user: {
+                        profile_image: rows[0].profile_image // ส่งข้อมูลรูปโปรไฟล์ผู้ใช้ไปที่หน้า product.ejs
+                    },
                     userID: userID // ส่งค่า userID ไปยังหน้า product.ejs
                 });
             } else {
@@ -221,6 +225,10 @@ app.get('/product/:id', (req, res) => {
             res.status(500).send('Error occurred while fetching the product.');
         });
 });
+
+
+
+
 // Register page
 app.get('/register', (req, res) => {
     res.render('register'); // Render the 'register.ejs' template
@@ -259,24 +267,42 @@ app.get('/settings', ifNotLoggedIn, (req, res) => {
 
 
 
-// POST /settings - Update user settings
 app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) => {
     const userID = req.session.userID;
-    const { name, email, phone, gender, address_line1, address_line2, city, state, postal_code, country } = req.body;
+    const {
+        name = '', 
+        email = '', 
+        phone = '', 
+        gender = '', 
+        day = 1, 
+        month = 1, 
+        year = 1900, 
+        address_line1 = '', 
+        address_line2 = '', 
+        city = '', 
+        state = '', 
+        postal_code = '', 
+        country = '', 
+        existing_profile_image = ''
+    } = req.body;
 
-    let profile_image = null;
+    let profile_image = existing_profile_image;
     if (req.file) {
         profile_image = `/uploads/${req.file.filename}`;
     }
 
     // Update user table
-    const userUpdateQuery = 'UPDATE users SET name = ?, email = ?, phone = ?, gender = ?, profile_image = ? WHERE id = ?';
+    const userUpdateQuery = `
+        UPDATE users 
+        SET name = ?, email = ?, phone = ?, gender = ?, dob_day = ?, dob_month = ?, dob_year = ?, profile_image = ? 
+        WHERE id = ?
+    `;
 
     // Check if settings exist for the user
     const settingsSelectQuery = 'SELECT * FROM settinguser WHERE user_id = ?';
     const settingsInsertQuery = `
-        INSERT INTO settinguser (user_id, address_line1, address_line2, city, state, postal_code, country, phone ,gender)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO settinguser (user_id, address_line1, address_line2, city, state, postal_code, country, phone, gender)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const settingsUpdateQuery = `
         UPDATE settinguser
@@ -296,7 +322,7 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
         })
         .then(() => {
             // Update user details
-            return dbConnection.execute(userUpdateQuery, [name, email, phone,gender, profile_image, userID]);
+            return dbConnection.execute(userUpdateQuery, [name, email, phone, gender, day, month, year, profile_image, userID]);
         })
         .then(() => {
             // Optionally, update the session with the new name
@@ -312,11 +338,67 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
 
 
 
+
+
+
+
+
+
 app.get('/notifications', function (req, res) {
     res.render('notifications', {
         name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
     });
 });
+
+
+
+app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
+    const userId = req.params.user_id; // ดึง user_id จาก URL พารามิเตอร์
+  
+    // Query เพื่อดึงรายละเอียดผู้ใช้และสินค้าที่ผู้ใช้ลงทะเบียน
+    const userQuery = 'SELECT * FROM users WHERE id = ?'; // ใช้คอลัมน์ id ที่ถูกต้อง
+    const productsQuery = 'SELECT * FROM products WHERE user_id = ?';
+    const settingsQuery = 'SELECT * FROM settinguser WHERE user_id = ?';
+
+    dbConnection.execute(userQuery, [userId])
+        .then(([userRows]) => {
+            if (userRows.length > 0) {
+                const user = userRows[0];
+
+                return Promise.all([
+                    
+                    dbConnection.execute(productsQuery, [user.id]),
+                    dbConnection.execute(settingsQuery, [user.id])
+                ]).then(([productRows, settingsRows]) => {
+                    user.products = productRows[0];
+                    const settings = settingsRows[0];
+
+                    res.render('view-user', {
+                        user: user,
+                        settings: settings
+                    });
+                });
+            } else {
+                res.status(404).send('User not found');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send('Error occurred while fetching user details.');
+        });
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Handle chat message
