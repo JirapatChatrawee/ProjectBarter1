@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 15, 2024 at 09:21 PM
+-- Generation Time: Jun 16, 2024 at 07:58 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.0.28
 
@@ -123,7 +123,10 @@ INSERT INTO `chat_messages` (`id`, `user_id`, `user_name`, `message`, `timestamp
 (111, 9, 'Graves', 'ss', '2024-06-15 19:11:26', 'Tobias', NULL),
 (112, 12, 'Tobias', 'fff', '2024-06-15 19:11:36', 'Graves', NULL),
 (113, 9, 'Gravess', '555', '2024-06-15 19:19:23', 'Tobias', NULL),
-(114, 9, 'Graves', '555', '2024-06-15 19:19:40', 'Tobias', NULL);
+(114, 9, 'Graves', '555', '2024-06-15 19:19:40', 'Tobias', NULL),
+(115, 9, 'Graves', 'สวัสดีนะ', '2024-06-16 17:18:02', 'Tobias', NULL),
+(116, 12, 'Tobias', 'สวัสดีครับ', '2024-06-16 17:18:40', 'Graves', NULL),
+(117, 9, 'Graves', 'ห', '2024-06-16 17:52:11', 'Tobias', NULL);
 
 -- --------------------------------------------------------
 
@@ -166,7 +169,9 @@ INSERT INTO `products` (`id`, `name`, `description`, `image`, `location`, `statu
 (51, 'ฟิกเกอร์', 'ฟิกเกอร์มือ 1 สนใจแลกเปลี่ยน', '/uploads/1717941023374.jpg', 'สุโขทัย', 'exchange', 12),
 (53, 'เทส', 'เทส', '/uploads/1718021526091.jpg', 'เทส', 'free', 12),
 (54, 'ssss', 'sss', '/uploads/1718467116028.jpg', 'ss', 'free', 12),
-(55, 'ดินสอสีss', 'ss', '/uploads/1718478530940.jfif', 'ss', 'free', 9);
+(55, 'ดินสอสีss', 'ss', '/uploads/1718478530940.jfif', 'ss', 'free', 9),
+(56, 'ดินสอสี', 'หกด', '/uploads/1718548897152.jpg', 'หฟกฟหหฟ', 'free', 9),
+(57, 'แก้วน้ำสุดเจ๋งแจ๋ว', 'แก้วน้ำวิเศษสุดเจ๋งแจ๋วค้าบบบบ', '/uploads/1718560052446.jpg', 'เทส', 'free', 9);
 
 -- --------------------------------------------------------
 
@@ -193,8 +198,8 @@ CREATE TABLE `settinguser` (
 --
 
 INSERT INTO `settinguser` (`id`, `user_id`, `address_line1`, `address_line2`, `city`, `state`, `postal_code`, `country`, `phone`, `gender`, `profile_image`) VALUES
-(1, 9, 'ชลบุรี', 'บางแสน', 'ชลบุรี', 'แม็กซิโก ซิตี้งับ', '20000', 'ไทยแลน', '06160545', 'other', ''),
-(2, 12, 'ชลบุรี', 'เทส', 'เทส', 'เทสๅ', 'เทส', 'เทสๅ', '5523423423234', 'male', '');
+(1, 9, 'ชลบุรี555', 'บางแสน555', 'ชลบุรี55', 'แม็กซิโก ซิตี้งับๅ55', '555', 'ไทยแลน55', '55', 'male', '/uploads/1718544574992.jpg'),
+(2, 12, 'รูเทอร่า66', 'รูเทอร่า66', 'บิลจวอเตอร์66', 'ไม่มี66', '66', 'บิลจวอเตอร์66', '066', 'male', '');
 
 -- --------------------------------------------------------
 
@@ -212,31 +217,21 @@ CREATE TABLE `users` (
   `dob_day` int(11) DEFAULT NULL,
   `dob_month` int(11) DEFAULT NULL,
   `dob_year` int(11) DEFAULT NULL,
-  `profile_image` varchar(255) DEFAULT NULL
+  `profile_image` varchar(255) DEFAULT NULL,
+  `address_line1` varchar(255) NOT NULL,
+  `address_line2` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `dob_day`, `dob_month`, `dob_year`, `profile_image`) VALUES
-(1, 'loom', 'puntawat2@gmail.com', '$2b$12$oEswfVRC.U3tDcL43BSIKeidClUp9g8UtOLU6J8q6DR5eZsVOj8pW', NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 'puntawt', 'puntawat3@gmail.com', '$2b$12$AS.Elz/H/gdjiXhK0p6cKuU570uVG.EYszRrlHearbjn0hQu88d5W', NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 'test2', 'test2@gmail.com', '$2b$12$emRX/B4PPd7FdnUufYFopuqSXGYd66ZF6GeEYB8R3hSPK9UY/qUdu', NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 'test4', 'test4@gmail.com', '$2b$12$wAghCYuU0sEeiX67ntzeNubFtRxb51x77m3pRNnO27tnFJXCW60VG', NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 'MrDraven', 'test5@gmail.com', '$2b$12$5q2UrqOCENg9KuEZRY0Rcunb82y8o7GUQw2g52e1Ia9oTI6mDUtlC', NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 'test6', 'test6@gmail.com', '$2b$12$KeYlU7QvpWfEkHgDpelycedsHmCdgk/8XtuRtZo5uBRU8knckrI0y', NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 'test7', 'test7@gmail.com', '$2b$12$Pxxrf/mC85Ug1Z5wi9/GseaNp6v0tGyh930h4rVCMYLnhINueukFy', NULL, NULL, NULL, NULL, NULL, NULL),
-(8, 'puntawat0406', 'puntawat04@gmail.com', '$2b$12$WR3GBbXZu2RoJwRrso1Hs.La0WrgKlYXXr4tqY39k8h77g6yNyH6S', NULL, NULL, NULL, NULL, NULL, NULL),
-(9, 'Graves', 'nick55@gmail.com', '$2b$12$qY4xgzdSrORYS9gRdick6uU7fXOkiNEl7uzD6aukmYyBHhoxFMrqm', '06160545', 'other', NULL, NULL, NULL, NULL),
-(10, 'hovoer', 'nick001@gmail.com', '$2b$12$1cmPE4qt67QIXHa.MiUEKuvzc/ka05VhkTLFPL0FlHOcD4yGvonIu', NULL, NULL, NULL, NULL, NULL, NULL),
-(11, 'lookasme', 'nick0001@gmail.com', '$2b$12$S27.82AoC6E8rTAKrr/5F.4r0x8sx5TJRGTYppJ/Wbdkgh05NkL.C', NULL, NULL, NULL, NULL, NULL, NULL),
-(12, 'Tobias', 'nick66@gmail.com', '$2b$12$iWlWMB83jxV5lb.j1bVO6.r6CPsIz1H9Ijc.i4hx9I7cDuLyfjdx6', '5523423423234', 'male', NULL, NULL, NULL, NULL),
-(13, 'nick88', 'nick88@gmail.com', '$2b$12$3fjDlVFo52JFwA2XNHrKk.K/7rOFnh4C/FZMfWRmGJHNI3pIJhAqi', NULL, NULL, NULL, NULL, NULL, NULL),
-(14, 'nick99', 'nick99@gmail.com', '$2b$12$oIf6lyE8aGA37fJcMw5jpe5JjGDAThXAOxO6KnkAXmm9Z.mDNbAZu', NULL, NULL, NULL, NULL, NULL, NULL),
-(15, 'ืnick10', 'nick10@gmail.com', '$2b$12$NbX2WCqMZ9Cs5fIVYvqI7.t9VaySZ3B2VizCMvaX8C1HKzHdQxInK', NULL, NULL, NULL, NULL, NULL, NULL),
-(16, 'puntawat12', 'sdfsdfsdf@11.com', '$2b$12$dJ20JxxiE8aXsnTVjPY9me6tYhwOJ3WoqvR.Z4XyvEJWf6dBijOJW', NULL, NULL, NULL, NULL, NULL, NULL),
-(17, 'puntawat122', 'sdfsdfsdf@1111.com', '$2b$12$TSDAQFre.UFY9buVzm8eAeNpDwShO8lCErh/AF/IokHpDIWnPr32C', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `phone`, `gender`, `dob_day`, `dob_month`, `dob_year`, `profile_image`, `address_line1`, `address_line2`) VALUES
+(9, 'Graves', 'nick55@gmail.com', '$2b$12$qY4xgzdSrORYS9gRdick6uU7fXOkiNEl7uzD6aukmYyBHhoxFMrqm', '55', 'male', 5, 5, 1925, '/uploads/1718558488046.png', '', ''),
+(12, 'Tobias', 'nick66@gmail.com', '$2b$12$iWlWMB83jxV5lb.j1bVO6.r6CPsIz1H9Ijc.i4hx9I7cDuLyfjdx6', '066', 'male', 17, 2, 1935, '/uploads/1718559228539.png', '', ''),
+(13, 'nick88', 'nick88@gmail.com', '$2b$12$3fjDlVFo52JFwA2XNHrKk.K/7rOFnh4C/FZMfWRmGJHNI3pIJhAqi', NULL, NULL, NULL, NULL, NULL, NULL, '', ''),
+(14, 'nick99', 'nick99@gmail.com', '$2b$12$oIf6lyE8aGA37fJcMw5jpe5JjGDAThXAOxO6KnkAXmm9Z.mDNbAZu', NULL, NULL, NULL, NULL, NULL, NULL, '', ''),
+(15, 'ืnick10', 'nick10@gmail.com', '$2b$12$NbX2WCqMZ9Cs5fIVYvqI7.t9VaySZ3B2VizCMvaX8C1HKzHdQxInK', NULL, NULL, NULL, NULL, NULL, NULL, '', '');
 
 --
 -- Indexes for dumped tables
@@ -284,7 +279,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `chat_messages`
 --
 ALTER TABLE `chat_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
 
 --
 -- AUTO_INCREMENT for table `image_url`
@@ -296,7 +291,7 @@ ALTER TABLE `image_url`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `settinguser`
