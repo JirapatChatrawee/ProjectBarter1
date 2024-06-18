@@ -26,7 +26,7 @@
             <a class="nav-link" href="notifications">การแจ้งเตือน</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="settings">การตั้งค่า</a>
+            <a class="nav-link" href="settings">การตั้งค่าโปรไฟล์</a>
           </li>
         </ul>
         <span class="navbar-text me-3">
@@ -57,16 +57,19 @@
       <form action="/settings" method="post" enctype="multipart/form-data">
 
 
-      
-      <!-- File upload section -->
-      <div class="profile-image-container">
-        <input type="hidden" name="existing_profile_image" value="<%= user.profile_image %>">
-        <img id="profileImagePreview" src="<%= user.profile_image ? user.profile_image : '/path/to/default/image.png' %>" alt="Profile Image">
-        <input type="file" id="profile_image" name="profile_image" onchange="previewProfileImage(event)">
-      </div>
+
+        <!-- File upload section -->
+        <div class="profile-image-container">
+          <input type="hidden" name="existing_profile_image" value="<%= user.profile_image %>">
+          <img id="profileImagePreview" src="<%= user.profile_image ? user.profile_image : '/path/to/default/image.png' %>" alt="Profile Image">
+          <input type="file" id="profile_image" name="profile_image" onchange="previewProfileImage(event)">
+        </div>
 
 
-
+        <div>
+          <a href="/view-user/<%= user.id %>" class="view-items-button">ดูรายการสินค้าของฉัน</a>
+        </div>
+        
         <label for="username">ชื่อผู้ใช้</label>
         <input type="text" id="username" name="username" value="<%= user.name %>" readonly>
 
@@ -144,7 +147,11 @@
         </script>
 
         <div class="form-actions">
-          <button type="submit" class="save-button">Save</button>
+          <!-- Button to view previously uploaded items -->
+         
+          <button type="submit" class="save-button">บันทึึึกข้อมูล</button>
+       
+
         </div>
       </form>
 

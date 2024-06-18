@@ -256,18 +256,7 @@
       <a class="navbar-brand" href="/"><img src="/images/Logoo.png" alt="Logo"></a>
       <div class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="upload">ลงสิ่งของ</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="save-offer">บันทึกข้อเสนอ</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="notifications">การแจ้งเตือน</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="settings">การตั้งค่าโปรไฟล์</a>
-          </li>
+       
         </ul>
         
     
@@ -286,7 +275,8 @@
                 <h2 class="profile-name"><%= user.name %></h2>
                 <p class="profile-phone">เบอร์โทร: <%= user.phone %></p>
                 <p class="profile-phone">เพศ: <%= user.gender %></p>
-                <p class="profile-address">ที่อยู่: <%= settings.address_line1 %></p>
+                <p class="profile-address">ที่อยู่: <%= user.address_line1 %></p>
+                <p class="profile-address">ที่อยู่: <%= user.address_line2 %></p>
             </div>
             <div class="profile-body">
                 <h3>รายการสินค้าที่เคยลง</h3>

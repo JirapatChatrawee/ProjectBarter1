@@ -9,6 +9,8 @@ const fs = require('fs');
 const dbConnection = require('./database');
 const socketIo = require('socket.io');
 
+// const someModule = require('./someModule');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -197,7 +199,7 @@ app.post('/', ifLoggedIn, [
 // Logout
 
 app.get('/logout', (req, res) => {
-    
+
     req.session = null;
     res.redirect('/');
 });
@@ -236,7 +238,6 @@ app.get('/register', (req, res) => {
 
 
 
-
 // Settings page
 app.get('/settings', ifNotLoggedIn, (req, res) => {
     const userID = req.session.userID;
@@ -270,19 +271,19 @@ app.get('/settings', ifNotLoggedIn, (req, res) => {
 app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) => {
     const userID = req.session.userID;
     const {
-        name = '', 
-        email = '', 
-        phone = '', 
-        gender = '', 
-        day = 1, 
-        month = 1, 
-        year = 1900, 
-        address_line1 = '', 
-        address_line2 = '', 
-        city = '', 
-        state = '', 
-        postal_code = '', 
-        country = '', 
+        name = '',
+        email = '',
+        phone = '',
+        gender = '',
+        day = 1,
+        month = 1,
+        year = 1900,
+        address_line1 = '',
+        address_line2 = '',
+        city = '',
+        state = '',
+        postal_code = '',
+        country = '',
         existing_profile_image = ''
     } = req.body;
 
@@ -294,9 +295,8 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
     // Update user table
     const userUpdateQuery = `
         UPDATE users 
-        SET name = ?, email = ?, phone = ?, gender = ?, dob_day = ?, dob_month = ?, dob_year = ?, profile_image = ? 
-        WHERE id = ?
-    `;
+        SET name = ?, email = ?, phone = ?, gender = ?, dob_day = ?, dob_month = ?, dob_year = ?, profile_image = ?, address_line1 = ? , address_line2 = ? 
+         WHERE id = ?`;
 
     // Check if settings exist for the user
     const settingsSelectQuery = 'SELECT * FROM settinguser WHERE user_id = ?';
@@ -322,7 +322,7 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
         })
         .then(() => {
             // Update user details
-            return dbConnection.execute(userUpdateQuery, [name, email, phone, gender, day, month, year, profile_image, userID]);
+            return dbConnection.execute(userUpdateQuery, [name, email, phone, gender, day, month, year, profile_image,address_line1,address_line2, userID]);
         })
         .then(() => {
             // Optionally, update the session with the new name
@@ -354,7 +354,7 @@ app.get('/notifications', function (req, res) {
 
 app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
     const userId = req.params.user_id; // ดึง user_id จาก URL พารามิเตอร์
-  
+
     // Query เพื่อดึงรายละเอียดผู้ใช้และสินค้าที่ผู้ใช้ลงทะเบียน
     const userQuery = 'SELECT * FROM users WHERE id = ?'; // ใช้คอลัมน์ id ที่ถูกต้อง
     const productsQuery = 'SELECT * FROM products WHERE user_id = ?';
@@ -366,7 +366,7 @@ app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
                 const user = userRows[0];
 
                 return Promise.all([
-                    
+
                     dbConnection.execute(productsQuery, [user.id]),
                     dbConnection.execute(settingsQuery, [user.id])
                 ]).then(([productRows, settingsRows]) => {
@@ -400,7 +400,6 @@ app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
 
 
 
-
 // Handle chat message
 io.on('connection', (socket) => {
     console.log('A user connected');
@@ -411,13 +410,13 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat message', (msg) => {
-        const userID = msg.userID; // Assuming userID is sent from client side
+        const userID = msg.userID;
         const messageData = {
             user_id: userID,
             user_name: userName,
             message: msg.message,
             product_user: msg.productUser,
-            timestamp: new Date(), // Add timestamp to message data
+            timestamp: new Date(),
             time: new Date().toLocaleTimeString()
         };
         // Save message to database
@@ -425,12 +424,50 @@ io.on('connection', (socket) => {
             'INSERT INTO chat_messages (user_id, user_name, message, product_user, timestamp) VALUES (?, ?, ?, ?, ?)',
             [messageData.user_id, messageData.user_name, messageData.message, messageData.product_user, messageData.timestamp]
         ).then(result => {
-            io.emit('chat message', messageData); // ส่ง messageData ที่มีข้อมูลเวลาไปยังไคลเอนต์
+            io.emit('chat message', messageData);
+        }).catch(err => {
+            console.error(err);
+        });
+    });
+
+    socket.on('chat image', (msg) => {
+        const userID = msg.userID;
+        const imageData = {
+            user_id: userID,
+            user_name: userName,
+            image_url: msg.imageUrl,
+            product_user: msg.productUser,
+            timestamp: new Date(),
+            time: new Date().toLocaleTimeString()
+        };
+        // Save image message to database
+        dbConnection.execute(
+            'INSERT INTO chat_messages (user_id, user_name, product_user, timestamp, image_url) VALUES (?, ?, ?, ?, ?)',
+            [imageData.user_id, imageData.user_name, imageData.product_user, imageData.timestamp, imageData.image_url]
+        ).then(result => {
+            io.emit('chat image', imageData);
         }).catch(err => {
             console.error(err);
         });
     });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Get chat history and render the save-offer page
 app.get('/save-offer', ifNotLoggedIn, (req, res) => {
@@ -469,6 +506,9 @@ app.get('/chat-history/:productUser', ifNotLoggedIn, (req, res) => {
 });
 
 
+
+
+
 app.post('/upload-image', upload.single('image'), (req, res) => {
     const tempPath = req.file.path;
     const targetPath = path.join(__dirname, 'public/uploads/', `${Date.now()}-${req.file.originalname}`);
@@ -480,6 +520,10 @@ app.post('/upload-image', upload.single('image'), (req, res) => {
         res.json({ success: true, url: imageUrl });
     });
 });
+
+
+
+
 
 app.post('/save-image-message', (req, res) => {
     const { imageUrl, userID, productUser } = req.body;
@@ -496,11 +540,15 @@ app.post('/save-image-message', (req, res) => {
 });
 
 
+
+
+
+
 // สร้างตัวแปร chatHistory เพื่อเก็บประวัติแชท
 let chatHistory = {};
 
-io.on('connection', function(socket) {
-    socket.on('chat message', function(msg) {
+io.on('connection', function (socket) {
+    socket.on('chat message', function (msg) {
         const userA = msg.name; // ชื่อผู้ใช้ที่ส่งข้อความ
         const userB = msg.productUser; // ผู้ใช้ที่ถูกส่งถึง
         const timestamp = new Date().toLocaleString(); // เวลาของข้อความ
@@ -528,6 +576,7 @@ io.on('connection', function(socket) {
         io.emit('chat message', msg);
     });
 });
+
 
 
 // Start server

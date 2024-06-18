@@ -9,7 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOM7F7HvX+io0M6dR9eE5pAXhTSTsABos4aK/a5h" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha384-jLKHWM6YzI2bF5s5q6rQqDd0DybebseZ74mWxnE4wzTosfn4/J2d2lw6ZQp8qaeG" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.1/dist/index.min.js"></script>
 
+  <link rel="stylesheet" href="https://emoji-button.js.org/styles.css">
   <style>
     body {
       font-family: 'Roboto', sans-serif;
@@ -94,53 +96,60 @@
     }
 
     .chat-window {
-      position: fixed;
-      bottom: 100px;
-      right: 20px;
-      width: 300px;
-      border: 1px solid #ccc;
-      background: #fff;
-      display: none;
-      flex-direction: column;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 300px;
+    border: 1px solid #ccc;
+    background: #fff;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
 
-    .chat-header {
-      padding: 10px;
-      background: #f39c12;
-      color: white;
-      border-radius: 10px 10px 0 0;
-      text-align: center;
-      font-weight: bold;
-    }
+.chat-header {
+    padding: 10px;
+    background: #f39c12;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+}
 
-    .chat-messages {
-      flex: 1;
-      padding: 10px;
-      overflow-y: auto;
-      max-height: 300px;
-    }
+.chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 300px;
+    background-color: #f7f7f7;
+}
 
-    .chat-input {
-      display: flex;
-      border-top: 1px solid #ccc;
-      position: relative;
-    }
+.chat-input {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #ccc;
+    background: #f0f0f0;
+}
 
-    .chat-input input {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-right: 1px solid #ccc;
-    }
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-right: 1px solid #ccc;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
 
-    .chat-input button {
-      padding: 10px;
-      border: none;
-      background: orange;
-      color: #fff;
-      cursor: pointer;
-    }
+.chat-input button {
+    padding: 10px;
+    border: none;
+    background: orange;
+    color: #fff;
+    cursor: pointer;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
 
     .chat-history {
       margin-top: 20px;
@@ -148,9 +157,10 @@
 
     .chat-message {
       margin-bottom: 10px;
-      padding: 5px;
-      background-color: #f0f0f0;
-      border-radius: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .chat-message.user {
@@ -160,17 +170,18 @@
 
     .chat-message.other {
       text-align: left;
-      background-color: #f0f0f0;
+    background-color: #f0f0f0;
     }
 
     .camera-icon {
-      position: absolute;
-      bottom: 10px;
-      right: 50px;
-      font-size: 2rem;
-      color: black;
-      cursor: pointer;
-    }
+    font-size: 2rem;
+    color: black;
+    cursor: pointer;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+}
+
 
     .camera-icon:hover {
       color: #8d3b05;
@@ -201,6 +212,15 @@
     .card-body {
       padding: 2rem;
     }
+
+    /* เพิ่มสไตล์ที่คุณต้องการ */
+    .emoji-picker-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 24px;
+    margin-left: 10px;
+}
   </style>
 </head>
 
@@ -220,7 +240,7 @@
             <a class="nav-link" href="/notifications">การแจ้งเตือน</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/settings">การตั้งค่า</a>
+            <a class="nav-link" href="/settings">การตั้งค่าโปรไฟล์</a>
           </li>
         </ul>
         <span class="navbar-text me-3">
@@ -270,7 +290,12 @@
     <div class="chat-input">
       <input type="text" id="chat-input" placeholder="Type a message...">
       <button id="send-message">Send</button>
-
+ 
+      <label class="camera-icon">
+        📷
+        <input type="file" class="hidden-file-input" accept="image/*" />
+    </label>
+    <button id="upload-button">Upload Image</button>
     </div>
   </div>
 
@@ -278,121 +303,154 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGKt+onT4K+zIJ3zcHPaYUqoVGOiASjFZgOlg/9E+4Pq/U3CZ1p3nE0cvjN" crossorigin="anonymous"></script>
   <script src="/socket.io/socket.io.js"></script>
 
+
+
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const userName = '<%= name %>';
-      const productUser = '<%= product.user_name %>';
-      const userID = '<%= userID %>';
-      const chatButton = document.querySelector('.btn-chat');
-      const chatWindow = document.querySelector('.chat-window');
-      const chatMessages = document.getElementById('chat-messages');
-      const chatInput = document.getElementById('chat-input');
-      const sendMessageButton = document.getElementById('send-message');
-      const uploadButton = document.getElementById('upload-button');
-      const fileInput = document.getElementById('file-input');
-      const socket = io({
+  document.addEventListener('DOMContentLoaded', function() {
+    const userName = '<%= name %>';
+    const productUser = '<%= product.user_name %>';
+    const userID = '<%= userID %>';
+    const chatButton = document.querySelector('.btn-chat');
+    const chatWindow = document.querySelector('.chat-window');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendMessageButton = document.getElementById('send-message');
+    const fileInput = document.getElementById('file-input');
+    const socket = io({
         query: `userName=${userName}`
-      });
+    });
 
-      chatButton.addEventListener('click', () => {
+    chatButton.addEventListener('click', () => {
         if (chatWindow.style.display === 'flex') {
-          chatWindow.style.display = 'none';
+            chatWindow.style.display = 'none';
         } else {
-          chatWindow.style.display = 'flex';
-          chatWindow.dataset.productUser = productUser;
-          fetch(`/chat-history/${productUser}`)
-            .then(response => response.json())
-            .then(data => {
-              chatMessages.innerHTML = '';
-              data.forEach(msg => {
-                const messageElement = document.createElement('div');
-                messageElement.classList.add('chat-message');
-                if (msg.user_name === userName) {
-                  messageElement.classList.add('user');
-                } else {
-                  messageElement.classList.add('other');
-                }
-                messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
-                chatMessages.appendChild(messageElement);
-              });
-              chatMessages.scrollTop = chatMessages.scrollHeight;
-            })
-            .catch(error => console.error('Error fetching chat history:', error));
+            chatWindow.style.display = 'flex';
+            chatWindow.dataset.productUser = productUser;
+            fetch(`/chat-history/${productUser}`)
+                .then(response => response.json())
+                .then(data => {
+                    chatMessages.innerHTML = '';
+                    data.forEach(msg => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('chat-message');
+                        if (msg.user_name === userName) {
+                            messageElement.classList.add('user');
+                        } else {
+                            messageElement.classList.add('other');
+                        }
+                        messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
+                        chatMessages.appendChild(messageElement);
+                    });
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                })
+                .catch(error => console.error('Error fetching chat history:', error));
         }
-      });
+    });
 
-      sendMessageButton.addEventListener('click', () => {
+    sendMessageButton.addEventListener('click', () => {
         const message = chatInput.value;
         if (message.trim() !== '') {
-          socket.emit('chat message', {
-            message,
-            productUser,
-            userID: userID
-          });
-          chatInput.value = '';
+            socket.emit('chat message', {
+                message,
+                productUser,
+                userID: userID
+            });
+            chatInput.value = '';
         }
-      });
+    });
 
-      socket.on('chat message', (msg) => {
+
+
+    socket.on('chat message', (msg) => {
         if ((msg.user_name === userName && msg.product_user === productUser) || (msg.user_name === productUser && msg.product_user === userName)) {
-          const messageElement = document.createElement('div');
-          messageElement.classList.add('chat-message');
-          if (msg.user_name === userName) {
-            messageElement.classList.add('user');
-          } else {
-            messageElement.classList.add('other');
-          }
-          messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
-          chatMessages.appendChild(messageElement);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message');
+            if (msg.user_name === userName) {
+                messageElement.classList.add('user');
+            } else {
+                messageElement.classList.add('other');
+            }
+            messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-      });
+    });
 
-      uploadButton.addEventListener('click', () => {
-        fileInput.click();
-      });
-
-      fileInput.addEventListener('change', () => {
+   // New image upload handling
+   uploadButton.addEventListener('click', () => {
         const file = fileInput.files[0];
         if (file) {
-          const formData = new FormData();
-          formData.append('image', file);
-          fetch('/upload-image', {
-              method: 'POST',
-              body: formData
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/upload-image', {
+                method: 'POST',
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
-              if (data.success) {
-                socket.emit('chat image', {
-                  imageUrl: data.url,
-                  productUser,
-                  userID: userID
-                });
-              }
+                if (data.success) {
+                    socket.emit('chat image', {
+                        imageUrl: data.url,
+                        productUser,
+                        userID: userID
+                    });
+                }
             })
             .catch(error => console.error('Error uploading image:', error));
         }
-      });
+    });
 
-      socket.on('chat image', (msg) => {
+    socket.on('chat message', (msg) => {
+        displayMessage(msg);
+    });
+
+    socket.on('chat image', (msg) => {
+        displayImageMessage(msg);
+    });
+
+    function displayMessage(msg) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('chat-message');
+        messageElement.classList.add(msg.user_name === userName ? 'user' : 'other');
+        messageElement.innerHTML = `<strong>${msg.user_name}:</strong> ${msg.message} <br> <small>${msg.time}</small>`;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function displayImageMessage(msg) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('chat-message');
+        messageElement.classList.add(msg.user_name === userName ? 'user' : 'other');
+        const imgElement = document.createElement('img');
+        imgElement.src = msg.imageUrl;
+        imgElement.style.maxWidth = '100%';
+        messageElement.appendChild(imgElement);
+        messageElement.innerHTML += `<br><small>${msg.time}</small>`;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+});
+
+
+
+    socket.on('chat image', (msg) => {
         if ((msg.user_name === userName && msg.product_user === productUser) || (msg.user_name === productUser && msg.product_user === userName)) {
-          const messageElement = document.createElement('div');
-          messageElement.classList.add('chat-message');
-          if (msg.user_name === userName) {
-            messageElement.classList.add('user');
-          } else {
-            messageElement.classList.add('other');
-          }
-          const imgElement = document.createElement('img');
-          imgElement.src = msg.imageUrl;
-          imgElement.style.maxWidth = '100%';
-          messageElement.appendChild(imgElement);
-          messageElement.innerHTML += `<br><small>${msg.time}</small>`;
-          chatMessages.appendChild(messageElement);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message');
+            if (msg.user_name === userName) {
+                messageElement.classList.add('user');
+            } else {
+                messageElement.classList.add('other');
+            }
+            const imgElement = document.createElement('img');
+            imgElement.src = msg.imageUrl;
+            imgElement.style.maxWidth = '100%';
+            messageElement.appendChild(imgElement);
+            messageElement.innerHTML += `<br><small>${msg.time}</small>`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-      });
     });
   </script>
 </body>

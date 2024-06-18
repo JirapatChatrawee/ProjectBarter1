@@ -273,3 +273,21 @@ button:hover {
 .save-button:hover {
   background-color: #bebebe;
 }
+
+.view-items-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;  /* เปลี่ยนจาก block เป็น inline-block */
+    text-align: left;       /* จัดข้อความไปทางซ้าย */
+    margin-right: 560px;     /* ปรับระยะห่างขวา 10px (หรือตามที่ต้องการ) */
+    
+}
+
+
+
+  .view-items-button:hover {
+    background-color: #afd4ff;
+  }
