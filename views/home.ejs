@@ -21,13 +21,13 @@
       /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
       margin-left: 2rem;
       /* ขยับไปทางขวา */
-      
+
     }
 
     .navbar-text {
       font-size: 1.5rem;
       /* ปรับขนาดตัวอักษรใหญ่ขึ้น */
-      
+
     }
 
     .card {
@@ -44,6 +44,11 @@
       /* ขยายเมื่อ hover */
       cursor: pointer;
       /* เปลี่ยน cursor เป็น pointer */
+    }
+
+    body {
+      background-color: #f0f0f0;
+      /* เปลี่ยนพื้นหลังเป็นสีเทา */
     }
 
     .card-body {
@@ -138,66 +143,62 @@
 
 
     @keyframes typewriter {
-      0% {
+    0% {
         width: 0;
-      }
-
-      100% {
+    }
+    100% {
         width: 100%;
-      }
     }
+}
 
-    @keyframes blink {
-
-      0%,
-      100% {
+@keyframes blink {
+    0%,
+    100% {
         border-color: transparent;
-      }
-
-      50% {
+    }
+    50% {
         border-color: black;
-      }
     }
+}
 
-    .loader {
-      position: relative;
-      overflow: hidden;
-      border-right: 3px solid;
-      width: 100%;
-      /* ปรับความกว้างของ loader */
-      max-width: 350px;
-      /* ความกว้างสูงสุดของ loader */
-      margin: 0 auto;
-      /* จัดกึ่งกลาง */
-      white-space: nowrap;
-      /* ห้ามข้อความขึ้นบรรทัดใหม่ */
-      animation: typewriter 4s steps(40) infinite alternate, blink 0.5s steps(40) infinite;
-    }
+.loader {
+    position: relative;
+    overflow: hidden;
+    border-right: 3px solid #ffb700; /* ปรับสีของเส้นขอบทางขวาของ loader เป็นสีที่คุณต้องการ */
+    width: 200%; /* ปรับความกว้างของ loader */
+    max-width: 430px; /* ความกว้างสูงสุดของ loader */
+    margin: 0 auto; /* จัดกึ่งกลาง */
+    white-space: nowrap; /* ห้ามข้อความขึ้นบรรทัดใหม่ */
+    animation: typewriter 4s steps(40) infinite alternate, blink 0.5s steps(40) infinite;
+}
 
     .new {
       background: linear-gradient(to right, #B8860B, #BDB76B);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-align: center;
-      font-size: 28px;
-      /* ขนาดของตัวหนังสือ */
-      font-weight: bold;
-      /* น้ำหนักของตัวหนังสือ */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        font-size: 36px; /* ปรับขนาดตัวหนังสือใหญ่ขึ้น */
+        font-weight: bold; /* กำหนดความหนาของตัวหนังสือ */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* เพิ่มเอฟเฟกต์เงาให้กับตัวหนังสือ */
     }
 
     .product {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  width: 250px; /* ปรับความกว้างลง */
-  height: 100px; /* ปรับความยาวลง */
-  color: #fff;
-  transition: 0.5s;
-  cursor: pointer;
-  margin-bottom: -20px; /* เพิ่มขยับลงล่าง */
-  margin-left: 580px; /* เพิ่มขยับไปทางขวา */
-}
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      width: 250px;
+      /* ปรับความกว้างลง */
+      height: 100px;
+      /* ปรับความยาวลง */
+      color: #fff;
+      transition: 0.5s;
+      cursor: pointer;
+      margin-bottom: -20px;
+      /* เพิ่มขยับลงล่าง */
+      margin-left: 580px;
+      /* เพิ่มขยับไปทางขวา */
+    }
 
 
 
@@ -257,17 +258,28 @@
     }
 
 
-        /*<!-- search form -->*/
-        .search {
+    /*<!-- search form -->*/
+    .search {
       display: flex;
       align-items: center;
       padding: 20px;
-      background-color: #f0f0f0;
+      background-color: #ffffff;
+      /* เปลี่ยนเป็นสีขาว */
     }
+
+    .search .logo {
+      max-width: 200px;
+      /* Adjust this value as needed */
+      height: auto;
+      margin-right: 20px;
+      /* Space between image and form */
+    }
+
     .search form {
       display: flex;
       flex-grow: 1;
     }
+
     .search input[type="text"] {
       flex-grow: 1;
       padding: 0.5rem;
@@ -275,18 +287,37 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
     .search button {
       margin-left: 1rem;
       padding: 0.5rem 1rem;
       font-size: 1.5rem;
-      background-color: #007bff;
+      background-color: #DC5F00;
       color: #fff;
       border: none;
       border-radius: 4px;
       cursor: pointer;
     }
+
     .search button:hover {
-      background-color: #0056b3;
+      background-color: #686D76;
+    }
+
+    .bodyproduct {
+      background-color: #ffffff;
+
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      /* เพิ่มเงาเพื่อให้ดูมีมิติ */
+      border-radius: 8px;
+      /* เพิ่มขอบมน */
+      padding: 20px;
+      /* เพิ่มการเว้นระยะใน */
+    
+    }
+
+    .productdetail {
+      background-color: #ffffff;
+      /* เปลี่ยนเป็นสีขาว */
     }
   </style>
 
@@ -323,25 +354,32 @@
     </div>
   </nav>
 
+<br>
 
-  <br><br>
   <!-- Add a search form -->
   <div class="search">
+    <img src="/images/Logoo2.png" alt="Logo" class="logo">
     <form action="/search" method="get">
+
       <input type="text" name="query" placeholder="ค้นหารายการสินค้า">
       <button type="submit">ค้นหา</button>
+      <button type="submit" name="status" value="free">#Free</button>
+      <button type="submit" name="status" value="exchange">#Exchange</button>
+
     </form>
   </div>
-  
+
+
 
   <br><br>
   <br><br>
 
-  <div class="product">
-    <span></span>
-    <div class="content">รายการสินค้า</div>
+  <div class="loader">
+
+    <span class="new">สินค้าแลกเปลี่ยนยอดนิยม</span>
   </div>
-  
+
+
   <br><br>
 
   <div class="carousel">
@@ -349,35 +387,26 @@
     <img id="productImage" src="" alt="Product Image" />
   </div>
 
+  <br><br>
 
-  <div class="loader">
-    <span class="new">สินค้าแลกเปลี่ยนยอดนิยม</span>
-  </div>
-
-
-  <button class="button" data-text="Awesome">
-    <span class="actual-text">&nbsp;Barter&nbsp;</span>
-    <span aria-hidden="true" class="hover-text">&nbsp;Barter&nbsp;</span>
-  </button>
-
-
-
-  <div class="row">
-    <% products.forEach(product => { %>
-    <div class="col-md-4 mb-4">
-      <div class="card" onclick="window.location.href='/product/<%= product.id %>'">
-        <img src="<%= product.image %>" class="card-img-top" alt="<%= product.name %>">
-        <div class="card-body">
-          <h5 class="card-title"><%= product.name %></h5>
-          <p class="card-text"><%= product.description %></p>
-          <!-- <p class="card-text"><strong>ที่อยู่:</strong> <%= product.location %> </p> -->
-          <p class="card-text"><strong>สถานะ:</strong> <span style="color: orange;"><%= product.status === 'free' ? 'Free' : 'Exchange' %></span></p>
+  <div class="bodyproduct">
+    <div class="row">
+      <% products.forEach(product => { %>
+      <div class="col-md-4 mb-4">
+        <div class="card" onclick="window.location.href='/product/<%= product.id %>'">
+          <img src="<%= product.image %>" class="card-img-top" alt="<%= product.name %>">
+          <div class="card-body">
+            <h5 class="card-title"><%= product.name %></h5>
+            <p class="card-text"><%= product.description %></p>
+            <!-- <p class="card-text"><strong>ที่อยู่:</strong> <%= product.location %> </p> -->
+            <p class="card-text"><strong>สถานะ:</strong> <span style="color: orange;"><%= product.status === 'free' ? 'Free' : 'Exchange' %></span></p>
+          </div>
         </div>
       </div>
+      <% }) %>
     </div>
-    <% }) %>
   </div>
-  </div>
+
 
   <script>
     const productImages = [

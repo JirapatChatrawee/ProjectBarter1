@@ -263,7 +263,7 @@ button:hover {
 
 .save-button {
   padding: 10px 20px;
-  background-color: orange;
+  background-color: #DC5F00;
   color: white;
   border: none;
   border-radius: 5px;
@@ -271,23 +271,32 @@ button:hover {
 }
 
 .save-button:hover {
-  background-color: #bebebe;
+    background-color: #686D76;
 }
 
-.view-items-button {
-    background-color: #007bff;
+
+  .btnproduct {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* จัดให้เนื้อหาอยู่กึ่งกลางตามแนวนอน */
+    height: 80px;
+    padding-top: 10px;
+  }
+  
+  .view-items-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #DC5F00;
     color: white;
-    padding: 10px 15px;
-    text-decoration: none;
+    border: none;
     border-radius: 5px;
-    display: inline-block;  /* เปลี่ยนจาก block เป็น inline-block */
-    text-align: left;       /* จัดข้อความไปทางซ้าย */
-    margin-right: 560px;     /* ปรับระยะห่างขวา 10px (หรือตามที่ต้องการ) */
-    
+    cursor: pointer;
+    text-decoration: none; /* เอาเส้นใต้ออก */
 }
-
-
 
   .view-items-button:hover {
-    background-color: #afd4ff;
+    background-color: #686D76; /* สีพื้นหลังเมื่อโฮเวอร์ */
+    color: white; /* เปลี่ยนสีตัวหนังสือเป็นขาว */
   }
+
+  

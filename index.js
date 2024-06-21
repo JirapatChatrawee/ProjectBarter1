@@ -391,24 +391,36 @@ app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
 
 
 // Search products
+
 app.get('/search', ifNotLoggedIn, (req, res) => {
-    const query = req.query.query;
-    if (!query) {
-        return res.redirect('/');
+    const query = req.query.query; // รับค่าค้นหาจากพารามิเตอร์ query ที่ผู้ใช้กรอกในฟอร์ม
+    const status = req.query.status; // รับค่าสถานะ (free หรือ exchange) จากปุ่มกรองที่ผู้ใช้เลือก
+
+    // เริ่มต้น SQL query เพื่อค้นหาสินค้า
+    let sql = "SELECT products.*, users.name AS user_name FROM products JOIN users ON products.user_id = users.id WHERE (products.name LIKE ? OR products.description LIKE ?)";
+     // ตั้งค่าพารามิเตอร์สำหรับ SQL query
+    let params = [`%${query}%`, `%${query}%`];
+
+
+    // ถ้ามีพารามิเตอร์ status ถูกส่งมาด้วย ให้เพิ่มเงื่อนไขใน SQL query 
+    if (status) {
+        sql += " AND products.status = ?";
+        params.push(status); // เพิ่มค่าสถานะลงในพารามิเตอร์ของ query
     }
-    dbConnection.execute(
-        "SELECT products.*, users.name AS user_name FROM products JOIN users ON products.user_id = users.id WHERE products.name LIKE ? OR products.description LIKE ?",
-        [`%${query}%`, `%${query}%`]
-    ).then(([rows]) => {
+    
+    // ดำเนินการ query ไปที่ฐานข้อมูล
+    dbConnection.execute(sql, params).then(([rows]) => {
+         // เมื่อ query เสร็จสิ้น ให้ render หน้า home พร้อมกับผลลัพธ์ของสินค้า
         res.render('home', {
-            name: req.session.userName,
-            products: rows
+            name: req.session.userName,  // ส่งชื่่อผู้ใช้ไปยัง template
+            products: rows   // ส่งผลลัพธ์ของสินค้าไปยัง template
         });
     }).catch(err => {
         console.error(err);
         res.status(500).send('Error occurred while searching for products.');
     });
 });
+
 
 
 

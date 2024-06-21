@@ -190,6 +190,30 @@
       display: none;
       /* Hide navbar initially */
     }
+
+    .btn {
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-orange {
+      display: inline-block;
+    padding: 10px 20px;
+    background-color: #DC5F00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    }
+
+    .btn-orange:hover {
+      background-color: #686D76; /* สีพื้นหลังเมื่อโฮเวอร์ */
+      color: white; /* เปลี่ยนสีตัวหนังสือเป็นขาว */
+    }
   </style>
 </head>
 
@@ -259,7 +283,7 @@
           <option value="exchange">Exchange</option>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary btn-block">อัพโหลดสินค้า</button>
+      <button type="submit" class="btn btn-orange btn-block">อัพโหลดสินค้า</button>
     </form>
   </div>
 
