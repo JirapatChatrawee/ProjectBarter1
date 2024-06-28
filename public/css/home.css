@@ -164,6 +164,7 @@
   .new {
     background: linear-gradient(to right, #B8860B, #BDB76B);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       text-align: center;
       font-size: 36px; /* ปรับขนาดตัวหนังสือใหญ่ขึ้น */
