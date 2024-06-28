@@ -1,0 +1,86 @@
+.background-image {
+    background-image: url('/images/bglog.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-text {
+    color: #000000; /* รหัสสีสำหรับสีดำเข้ม */
+    text-align: center; /* จัดข้อความให้อยู่ตรงกลางแนวนอน */
+    font-size: 4em; /* ขยายขนาดฟอนต์ */
+}
+
+.login-form {
+    width: 50%; /* ปรับความกว้างของฟอร์ม */
+    height: 330px; /* กำหนดความสูงของฟอร์ม */
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px auto; /* กำหนดระยะห่างด้านบนและด้านล่าง 20px และจัดตำแหน่งกึ่งกลางแนวนอน */
+}
+
+.login-form label {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของ label */
+}
+
+.login-form input {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของ input */
+}
+
+.login-form button {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของปุ่ม */
+}
+
+.btn-primary {
+    font-size: 1.2em; /* ปรับขนาดตัวอักษรเท่ากับปุ่ม Login */
+    padding: 0.5rem 1rem; /* ปรับขนาด padding เพิ่มเติมตามต้องการ */
+}
+.background-image {
+    background-image: url('/images/bglog.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-text {
+    color: #000000; /* รหัสสีสำหรับสีดำเข้ม */
+    text-align: center; /* จัดข้อความให้อยู่ตรงกลางแนวนอน */
+    font-size: 4em; /* ขยายขนาดฟอนต์ */
+}
+
+.login-form {
+    width: 50%; /* ปรับความกว้างของฟอร์ม */
+    height: 330px; /* กำหนดความสูงของฟอร์ม */
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 20px auto; /* กำหนดระยะห่างด้านบนและด้านล่าง 20px และจัดตำแหน่งกึ่งกลางแนวนอน */
+}
+
+.login-form label {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของ label */
+}
+
+.login-form input {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของ input */
+}
+
+.login-form button {
+    font-size: 1.2em; /* ปรับขนาดฟอนต์ของปุ่ม */
+}
+
+.btn-primary {
+    font-size: 1.2em; /* ปรับขนาดตัวอักษรเท่ากับปุ่ม Login */
+    padding: 0.5rem 1rem; /* ปรับขนาด padding เพิ่มเติมตามต้องการ */
+}

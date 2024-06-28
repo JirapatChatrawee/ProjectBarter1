@@ -1,0 +1,203 @@
+/* Navbar */
+.navbar {
+    background-color: #343a40;
+    /* สีพื้นหลังของ Navbar */
+  }
+
+  .navbar-brand img {
+    height: 100px;
+    /* ปรับความสูงของโลโก้ */
+    width: 250px;
+    /* ให้ความกว้างปรับตามสัดส่วนของโลโก้ */
+  }
+
+  .navbar-nav .nav-link {
+    font-size: 1.5rem;
+    /* ปรับขนาดตัวอักษร */
+    margin-left: 1rem;
+    color: white;
+  }
+
+  .navbar-text {
+    font-size: 1.2rem;
+    color: white;
+    margin-right: 1rem;
+    /* เพิ่ม margin ด้านขวา */
+  }
+
+  .btn.btn-danger {
+    margin-left: 2rem;
+  }
+
+  /* Content */
+  body {
+    background-color: #f8f9fa;
+    /* สีพื้นหลังของเนื้อหา */
+    color: #343a40;
+    /* สีตัวอักษรของเนื้อหา */
+  }
+
+  h1 {
+    color: #343a40;
+    /* สีหัวข้อ */
+  }
+
+  .container {
+    background-color: #ffffff;
+    /* สีพื้นหลังของฟอร์ม */
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* เพิ่มเงา */
+  }
+
+  .form-group label {
+    font-weight: bold;
+    color: #343a40;
+  }
+
+  .form-control,
+  .form-control-file,
+  .form-control:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+  }
+
+  .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+
+  .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+  }
+
+  .text-center {
+    margin-bottom: 1rem;
+  }
+
+  .loader {
+    width: 48px;
+    height: 48px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+  }
+
+  .loader.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loader:before {
+    content: '';
+    width: 48px;
+    height: 5px;
+    background: #f0808050;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    border-radius: 50%;
+    animation: shadow324 0.5s linear infinite;
+  }
+
+  .loader:after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: #f08080;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 4px;
+    animation: jump7456 0.5s linear infinite;
+  }
+
+  .btn-block {
+  width: auto;
+}
+
+  @keyframes jump7456 {
+    15% {
+      border-bottom-right-radius: 3px;
+    }
+
+    25% {
+      transform: translateY(9px) rotate(22.5deg);
+    }
+
+    50% {
+      transform: translateY(18px) scale(1, .9) rotate(45deg);
+      border-bottom-right-radius: 40px;
+    }
+
+    75% {
+      transform: translateY(9px) rotate(67.5deg);
+    }
+
+    100% {
+      transform: translateY(0) rotate(90deg);
+    }
+  }
+
+  @keyframes shadow324 {
+
+    0%,
+    100% {
+      transform: scale(1, 1);
+    }
+
+    50% {
+      transform: scale(1.2, 1);
+    }
+  }
+
+  /* Animation to hide and show navbar */
+  @keyframes slideDown {
+    0% {
+      transform: translateY(-100%);
+    }
+
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+
+  .navbar {
+    animation: slideDown 1s forwards;
+    /* Keep navbar shown after animation */
+  }
+
+  .hidden {
+    display: none;
+    /* Hide navbar initially */
+  }
+
+  .btn {
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+  }
+
+  .btn-orange {
+    display: inline-block;
+  padding: 10px 20px;
+  background-color: #DC5F00;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  }
+
+  .btn-orange:hover {
+    background-color: #686D76; /* สีพื้นหลังเมื่อโฮเวอร์ */
+    color: white; /* เปลี่ยนสีตัวหนังสือเป็นขาว */
+  }
