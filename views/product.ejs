@@ -67,15 +67,20 @@
       </p>
       
 
-
+ <!-- แชท กับ แลกเปลี่ยน -->
 
           <% if (name !== product.user_name) { %>
           <button class="btn btn-orange btn-chat" data-product-user="<%= product.user_name %>">แชท</button>
+          
+          <button class="btn btn-orange btn-exchange" data-product-user="<%= product.user_name %>">แลกเปลี่ยน</button>
+
           <% } %>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- รายละเอียดแชท -->
 
   <div class="chat-window" data-product-user="">
     <div class="chat-header"> ลงสินค้าโดย <span id="chat-product-user"><%= product.user_name %></span></div>
@@ -91,6 +96,41 @@
     
     </div>
   </div>
+
+
+<!-- ป๊อปอัพสำหรับการยืนยันการแลกเปลี่ยน -->
+<div id="exchangePopup" class="popup">
+  <div class="popup-content">
+    <p>คุณต้องการยืนยันการแลกเปลี่ยนหรือไม่?</p>
+    <button id="confirmExchange" class="btn btn-success">ยืนยัน</button>
+    <button id="cancelExchange" class="btn btn-danger">ยกเลิก</button>
+  </div>
+</div>
+
+
+<!-- สคริปป๊อปอัพสำหรับการยืนยันการแลกเปลี่ยน -->
+<script>
+
+document.querySelectorAll('.btn-exchange').forEach(button => {
+  button.addEventListener('click', function() {
+    const popup = document.getElementById('exchangePopup');
+    popup.style.display = 'flex';
+  });
+});
+
+document.getElementById('confirmExchange').addEventListener('click', function() {
+  // โค้ดจัดการการยืนยันการแลกเปลี่ยน
+  console.log('แลกเปลี่ยนยืนยัน');
+  document.getElementById('exchangePopup').style.display = 'none';
+});
+
+document.getElementById('cancelExchange').addEventListener('click', function() {
+  document.getElementById('exchangePopup').style.display = 'none';
+});
+
+
+</script>
+
 
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-eMNOMzAplPvK7R5jz9yU8JO6STtUWiK+z3h+Qg6lz9zzTtmIMyn8ln4WllFITEQ/" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGKt+onT4K+zIJ3zcHPaYUqoVGOiASjFZgOlg/9E+4Pq/U3CZ1p3nE0cvjN" crossorigin="anonymous"></script>
