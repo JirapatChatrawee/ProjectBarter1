@@ -1,0 +1,58 @@
+/* edit.css */
+
+/* กำหนดสไตล์สำหรับ container */
+.container {
+    max-width: 600px; /* ขนาดสูงสุด */
+    margin: 20px auto; /* จัดกลาง */
+    padding: 20px; /* ระยะห่างภายใน */
+    border: 1px solid #ccc; /* ขอบ */
+    border-radius: 8px; /* มุมโค้ง */
+    background-color: #f9f9f9; /* สีพื้นหลัง */
+}
+
+/* สไตล์สำหรับ h2 */
+h2 {
+    text-align: center; /* จัดกลางข้อความ */
+    color: #333; /* สีข้อความ */
+}
+
+/* สไตล์สำหรับ form-group */
+.form-group {
+    margin-bottom: 15px; /* ระยะห่างระหว่างกลุ่ม */
+}
+
+/* สไตล์สำหรับ label */
+label {
+    display: block; /* ทำให้ label เป็น block */
+    margin-bottom: 5px; /* ระยะห่างด้านล่าง */
+    font-weight: bold; /* ตัวหนา */
+}
+
+/* สไตล์สำหรับ input และ textarea */
+input[type="text"], textarea {
+    width: 100%; /* ให้เต็มความกว้าง */
+    padding: 10px; /* ระยะห่างภายใน */
+    border: 1px solid #ccc; /* ขอบ */
+    border-radius: 4px; /* มุมโค้ง */
+    box-sizing: border-box; /* ทำให้รวมขอบและ padding */
+}
+
+/* สไตล์สำหรับปุ่ม */
+.btn {
+    background-color: #DC5F00; /* สีพื้นหลังปุ่ม */
+    color: #fff; /* สีตัวอักษร */
+    border: none; /* ไม่มีขอบ */
+    padding: 10px 15px; /* ระยะห่างภายในปุ่ม */
+    text-align: center; /* จัดกลางข้อความ */
+    text-decoration: none; /* ไม่ให้มีเส้นใต้ */
+    display: inline-block; /* ทำให้ปุ่มแสดงแบบ inline */
+    margin: 5px 2px; /* ระยะห่างระหว่างปุ่ม */
+    cursor: pointer; /* แสดง cursor เป็นมือเมื่อชี้ที่ปุ่ม */
+    border-radius: 4px; /* มุมโค้ง */
+    transition: background-color 0.3s; /* เอฟเฟกต์เมื่อมีการ hover */
+}
+
+/* สไตล์สำหรับปุ่มเมื่อ hover */
+.btn:hover {
+    background-color: #c85e00; /* สีที่เปลี่ยนเมื่อ hover */
+}

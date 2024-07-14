@@ -352,11 +352,11 @@ app.get('/notifications', function (req, res) {
 
 
 
+// เส้นทางสำหรับดูรายละเอียดผู้ใช้และสินค้า
 app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
-    const userId = req.params.user_id; // ดึง user_id จาก URL พารามิเตอร์
+    const userId = req.params.user_id;
 
-    // Query เพื่อดึงรายละเอียดผู้ใช้และสินค้าที่ผู้ใช้ลงทะเบียน
-    const userQuery = 'SELECT * FROM users WHERE id = ?'; // ใช้คอลัมน์ id ที่ถูกต้อง
+    const userQuery = 'SELECT * FROM users WHERE id = ?';
     const productsQuery = 'SELECT * FROM products WHERE user_id = ?';
     const settingsQuery = 'SELECT * FROM settinguser WHERE user_id = ?';
 
@@ -366,27 +366,143 @@ app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
                 const user = userRows[0];
 
                 return Promise.all([
-
                     dbConnection.execute(productsQuery, [user.id]),
                     dbConnection.execute(settingsQuery, [user.id])
-                ]).then(([productRows, settingsRows]) => {
-                    user.products = productRows[0];
-                    const settings = settingsRows[0];
+                ]).then(([productResults, settingsResults]) => {
+                    const products = productResults[0];
+                    const settings = settingsResults[0];
 
+                    // เพิ่ม products ลงใน user object
+                    user.products = products;
+
+                    // เรนเดอร์หน้า view-user พร้อมส่ง user และ settings
                     res.render('view-user', {
                         user: user,
                         settings: settings
                     });
                 });
             } else {
-                res.status(404).send('User not found');
+                res.status(404).send('ไม่พบผู้ใช้');
             }
         })
         .catch(err => {
             console.error(err);
-            res.status(500).send('Error occurred while fetching user details.');
+            res.status(500).send('เกิดข้อผิดพลาดขณะดึงข้อมูลผู้ใช้');
         });
 });
+
+
+
+// เส้นทางสำหรับแก้ไขสินค้า (GET)
+app.get('/edit-product/:product_id', ifNotLoggedIn, function (req, res) {
+    const productId = req.params.product_id;
+    const query = 'SELECT * FROM products WHERE id = ?';
+
+    dbConnection.execute(query, [productId])
+        .then(([rows]) => {
+            if (rows.length > 0) {
+                const product = rows[0];
+                // ตรวจสอบว่าผู้ใช้เป็นเจ้าของสินค้าหรือไม่
+                if (product.user_id !== req.session.userID) {
+                    return res.status(403).send('คุณไม่มีสิทธิ์ในการแก้ไขผลิตภัณฑ์นี้');
+                }
+                return res.render('edit-product', { product });
+            } else {
+                return res.status(404).send('ไม่พบผลิตภัณฑ์');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).send('เกิดข้อผิดพลาดขณะดึงข้อมูลผลิตภัณฑ์');
+        });
+});
+
+
+
+// เส้นทางสำหรับแก้ไขสินค้า (POST)
+
+
+// เส้นทางสำหรับแก้ไขสินค้า (POST)
+app.post('/edit-product/:product_id', ifNotLoggedIn, upload.single('image'), function (req, res) {
+    const productId = req.params.product_id;
+    const { name, description, location, status } = req.body;
+    const image = req.file ? `/uploads/${req.file.filename}` : req.body.image_url; // ใช้รูปภาพใหม่ถ้ามีการอัปโหลด
+
+    console.log('Image file:', req.file); // เพิ่มดีบั๊ก
+    console.log('Image URL:', req.body.image_url); // เพิ่มดีบั๊ก
+
+    const selectQuery = 'SELECT * FROM products WHERE id = ?';
+    const updateQuery = 'UPDATE products SET name = ?, description = ?, location = ?, status = ?, image = ? WHERE id = ?';
+
+    dbConnection.execute(selectQuery, [productId])
+        .then(([rows]) => {
+            if (rows.length > 0) {
+                const product = rows[0];
+                if (product.user_id !== req.session.userID) {
+                    return res.status(403).send('คุณไม่มีสิทธิ์ในการแก้ไขผลิตภัณฑ์นี้');
+                }
+                // แก้ไขสินค้า โดยตรวจสอบค่า undefined และกำหนดเป็น null ถ้าจำเป็น
+                const updatedName = name || null;
+                const updatedDescription = description || null;
+                const updatedLocation = location || null;
+                const updatedStatus = status || null;
+                const updatedImage = image || null;
+
+                return dbConnection.execute(updateQuery, [updatedName, updatedDescription, updatedLocation, updatedStatus, updatedImage, productId]);
+            } else {
+                return res.status(404).send('ไม่พบผลิตภัณฑ์');
+            }
+        })
+        .then(() => {
+            res.redirect('/view-user/' + req.session.userID); // เปลี่ยนเส้นทางหลังจากแก้ไขสำเร็จ
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send('เกิดข้อผิดพลาดขณะอัปเดตผลิตภัณฑ์');
+        });
+});
+
+
+
+
+
+
+// เส้นทางสำหรับลบสินค้า (POST)
+// เส้นทางสำหรับลบสินค้า (POST)
+app.post('/delete-product/:product_id', ifNotLoggedIn, function (req, res) {
+    const productId = req.params.product_id;
+    
+    const selectQuery = 'SELECT * FROM products WHERE id = ?';
+    const deleteQuery = 'DELETE FROM products WHERE id = ?';
+
+    dbConnection.execute(selectQuery, [productId])
+        .then(([rows]) => {
+            if (rows.length > 0) {
+                const product = rows[0];
+                if (product.user_id !== req.session.userID) {
+                    return res.status(403).send('คุณไม่มีสิทธิ์ในการลบผลิตภัณฑ์นี้');
+                }
+                return dbConnection.execute(deleteQuery, [productId]);
+            } else {
+                return res.status(404).send('ไม่พบผลิตภัณฑ์');
+            }
+        })
+        .then(() => {
+            // Redirect หลังจากลบเสร็จ
+            res.redirect('/view-user/' + req.session.userID);
+        })
+        .catch(err => {
+            console.error(err);
+            // ตรวจสอบว่าไม่ได้ส่งคำตอบมากกว่าหนึ่งครั้ง
+            if (!res.headersSent) {
+                res.status(500).send('เกิดข้อผิดพลาดขณะลบผลิตภัณฑ์');
+            }
+        });
+});
+
+
+
+
 
 
 

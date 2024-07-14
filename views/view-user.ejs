@@ -24,8 +24,12 @@
       <a class="navbar-brand" href="/"><img src="/images/Logoo.png" alt="Logo"></a>
       <div class="collapse navbar-collapse">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
+          <span class="navbar-text">
+            <%= user.name %>
+          </span>
         </ul>
+
+        
 
 
         
@@ -36,36 +40,49 @@
 
   <div class="container">
     <div class="profile">
-      <div class="profile-header">
-        <img src="<%= user.profile_image %>" alt="Profile Image" class="profile-img">
-        <h2 class="profile-name"><%= user.name %></h2>
-        <p class="profile-phone">เบอร์โทร: <%= user.phone %></p>
-        <p class="profile-phone">เพศ: <%= user.gender %></p>
-        <p class="profile-address">ที่อยู่1: <%= user.address_line1 %></p>
-        <p class="profile-address">ที่อยู่2: <%= user.address_line2 %></p>
-      </div>
-      <div class="profile-body">
-        <br>
-        <h3>รายการสินค้าที่เคยลง</h3>
-        <br><br>
-        <div class="product-list">
-          <% user.products.forEach(function(product) { %>
-          <div class="product-card">
-            <a href="/product/<%= product.id %>">
-              <img src="<%= product.image %>" alt="<%= product.name %>" class="product-img">
-            </a>
-            <div class="product-details">
-              <h4 class="product-name"><%= product.name %></h4>
-              <p class="product-description"><%= product.description %></p>
-              <p class="product-location">Location: <%= product.location %></p>
-              <p class="product-status">สถานะ: <%= product.status %></p>
-            </div>
-          </div>
-          <% }); %>
+        <div class="profile-header">
+            <img src="<%= user.profile_image %>" alt="Profile Image" class="profile-img">
+            <h2 class="profile-name"><%= user.name %></h2>
+            <p class="profile-phone">เบอร์โทร: <%= user.phone %></p>
+            <p class="profile-phone">เพศ: <%= user.gender %></p>
+            <p class="profile-address">ที่อยู่1: <%= user.address_line1 %></p>
+            <p class="profile-address">ที่อยู่2: <%= user.address_line2 %></p>
         </div>
-      </div>
+        <div class="profile-body">
+            <br>
+            <h3>รายการสินค้าที่เคยลง</h3>
+            <br><br>
+            <div class="product-list">
+                <% user.products.forEach(function(product) { %>
+                <div class="product-card">
+                    <a href="/product/<%= product.id %>">
+                        <img src="<%= product.image %>" alt="<%= product.name %>" class="product-img">
+                    </a>
+                    <div class="product-details">
+                        <h4 class="product-name"><%= product.name %></h4>
+                        <p class="product-description"><%= product.description %></p>
+                        <p class="product-location">Location: <%= product.location %></p>
+                        <p class="product-status">สถานะ: <%= product.status %></p>
+                        <div class="product-actions">
+                            <% if (product.user_id == user.id) { %> <!-- ตรวจสอบเจ้าของ -->
+                                <a href="/edit-product/<%= product.id %>" class="btn btn-primary">แก้ไข</a>
+                                <form action="/delete-product/<%= product.id %>" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger">ลบ</button>
+                                </form>
+                            <% } %> <!-- ถ้าไม่ใช่เจ้าของ ปุ่มจะไม่แสดง -->
+                        </div>
+                    </div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
+
+
+
+
+
 </body>
 
 </html>

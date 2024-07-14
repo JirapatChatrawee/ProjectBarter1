@@ -263,3 +263,16 @@
     font-size: 1.1rem;
     color: #495057;
   }
+
+  .product-card {
+    position: relative;
+    padding-bottom: 56px; /* เพิ่ม padding เพื่อให้มีที่ว่างสำหรับปุ่ม */
+}
+
+.product-actions {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+}
+

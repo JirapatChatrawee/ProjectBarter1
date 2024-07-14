@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+    <link rel="stylesheet" href="/css/edit.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Edit Product</h2>
+        <form action="/edit-product/<%= product.id %>" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="product_name">ชื่อสินค้า (จำเป็น):</label>
+                <input type="text" class="form-control" id="product_name" name="name" value="<%= product.name %>" required>
+            </div>
+            <div class="form-group">
+                <label for="product_description">รายละเอียด (จำเป็น):</label>
+                <textarea class="form-control" id="product_description" name="description" rows="3" required><%= product.description %></textarea>
+            </div>
+            <div class="form-group">
+                <label for="product_location">ที่อยู่:</label>
+                <input type="text" class="form-control" id="product_location" name="location" value="<%= product.location %>" required>
+            </div>
+            <div class="form-group">
+                <label for="product_status">สถานะ:</label>
+                <select class="form-control" id="product_status" name="status" required>
+                    <option value="">โปรดเลือก</option>
+                    <option value="free" <%= product.status === 'free' ? 'selected' : '' %>>Free</option>
+                    <option value="exchange" <%= product.status === 'exchange' ? 'selected' : '' %>>Exchange</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="product_image">อัพโหลดรูปภาพใหม่ (ไม่จำเป็น):</label>
+                <input type="file" class="form-control-file" id="product_image" name="image" accept="image/*">
+                <input type="hidden" name="image_url" value="<%= product.image %>"> <!-- เก็บ URL เดิม -->
+            </div>
+            <button type="submit" class="btn btn-orange btn-block">บันทึกการเปลี่ยนแปลง</button>
+        </form>
+    </div>
+    
+    
+</body>
+</html>
