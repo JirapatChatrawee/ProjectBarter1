@@ -338,17 +338,61 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
 
 
 
+  
+//Notification
+const sqlite3 = require('sqlite3').verbose();
+const db = new sqlite3.Database(':memory:');
+
+db.serialize(() => {
+  db.run(`CREATE TABLE notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_profile_image TEXT,
+    user_name TEXT,
+    message TEXT
+  )`);
+});
+
+module.exports = db;
 
 
-
-
-
-
-app.get('/notifications', function (req, res) {
-    res.render('notifications', {
-        name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
+app.post('/confirm-exchange', (req, res) => {
+    const exchangeData = req.body;
+    console.log('คำร้องแลกเปลี่ยนที่ได้รับ:', exchangeData);
+  
+    const sql = `INSERT INTO notifications (user_profile_image, user_name, message)
+                 VALUES (?, ?, ?)`;
+    const params = ['/images/default-profile.png', exchangeData.user_name, `ต้องการสินค้าของคุณ`];
+    db.run(sql, params, function(err) {
+      if (err) {
+        return console.error(err.message);
+      }
+      res.json({ message: 'ยืนยันการแลกเปลี่ยนสำเร็จ', id: this.lastID });
     });
 });
+  
+// Route สำหรับแสดงหน้าการแจ้งเตือน
+app.get('/notifications', (req, res) => {
+    const sql = `SELECT * FROM notifications`;
+    db.all(sql, [], (err, rows) => {
+      if (err) {
+        throw err;
+      }
+      res.render('notifications', {
+        name: req.session.userName,
+        notifications: rows
+      });
+    });
+});
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -724,35 +768,7 @@ io.on('connection', function (socket) {
     });
 });
 
-// ตัวอย่างข้อมูลการแจ้งเตือนที่เก็บในหน่วยความจำชั่วคราว
-let notifications = [
-    { user_profile_image: '/images/default-profile.png', user_name: 'User1', message: 'ต้องการสินค้าของคุณ' },
-    { user_profile_image: '/images/default-profile.png', user_name: 'User2', message: 'ต้องการแลกเปลี่ยนสินค้ากับคุณ' }
-];
 
-// Route สำหรับการยืนยันการแลกเปลี่ยน
-app.post('/confirm-exchange', (req, res) => {
-  const exchangeData = req.body;
-  console.log('คำร้องแลกเปลี่ยนที่ได้รับ:', exchangeData);
-
-  // เพิ่มข้อมูลการแจ้งเตือนใหม่เข้าไปใน array
-  notifications.push({
-    user_profile_image: '/images/default-profile.png', // เปลี่ยนเป็น path ที่ถูกต้อง
-    user_name: exchangeData.user_name,
-    message: `ต้องการสินค้าของคุณ`,
-  });
-
-  res.json({ message: 'ยืนยันการแลกเปลี่ยนสำเร็จ' });
-});
-
-// Route สำหรับแสดงหน้าการแจ้งเตือน
-app.get('/notifications', (req, res) => {
-    console.log("Serving notifications page");
-    console.log(notifications);
-
-    // ใช้ตัวแปร notifications ที่อยู่ในหน่วยความจำชั่วคราว
-    res.render('notifications', { notifications: notifications });
-});
 
 // Start server
 server.listen(3000, () => console.log("Server is running..."));
