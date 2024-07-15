@@ -42,6 +42,26 @@
     </div>
   </nav>
 
+  <div class="container mt-4">
+    <h1>การแจ้งเตือน</h1>
+    <div id="notifications">
+      <% if (notifications && notifications.length > 0) { %>
+        <% notifications.forEach(notification => { %>
+          <div class="notification card mb-3">
+            <div class="card-body">
+              <img src="<%= notification.user_profile_image %>" alt="Profile Image" class="img-thumbnail" style="width: 50px;">
+              <p><%= notification.user_name %> <%= notification.message %></p>
+              <button class="btn btn-success">ยอมรับ</button>
+              <button class="btn btn-danger">ปฏิเสธ</button>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p>ไม่มีการแจ้งเตือน</p>
+      <% } %>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
     integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>

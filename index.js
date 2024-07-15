@@ -724,7 +724,35 @@ io.on('connection', function (socket) {
     });
 });
 
+// ตัวอย่างข้อมูลการแจ้งเตือนที่เก็บในหน่วยความจำชั่วคราว
+let notifications = [
+    { user_profile_image: '/images/default-profile.png', user_name: 'User1', message: 'ต้องการสินค้าของคุณ' },
+    { user_profile_image: '/images/default-profile.png', user_name: 'User2', message: 'ต้องการแลกเปลี่ยนสินค้ากับคุณ' }
+];
 
+// Route สำหรับการยืนยันการแลกเปลี่ยน
+app.post('/confirm-exchange', (req, res) => {
+  const exchangeData = req.body;
+  console.log('คำร้องแลกเปลี่ยนที่ได้รับ:', exchangeData);
+
+  // เพิ่มข้อมูลการแจ้งเตือนใหม่เข้าไปใน array
+  notifications.push({
+    user_profile_image: '/images/default-profile.png', // เปลี่ยนเป็น path ที่ถูกต้อง
+    user_name: exchangeData.user_name,
+    message: `ต้องการสินค้าของคุณ`,
+  });
+
+  res.json({ message: 'ยืนยันการแลกเปลี่ยนสำเร็จ' });
+});
+
+// Route สำหรับแสดงหน้าการแจ้งเตือน
+app.get('/notifications', (req, res) => {
+    console.log("Serving notifications page");
+    console.log(notifications);
+
+    // ใช้ตัวแปร notifications ที่อยู่ในหน่วยความจำชั่วคราว
+    res.render('notifications', { notifications: notifications });
+});
 
 // Start server
 server.listen(3000, () => console.log("Server is running..."));
