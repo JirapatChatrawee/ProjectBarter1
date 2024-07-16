@@ -15,6 +15,17 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+// ตั้งค่าการใช้งาน body-parser เพื่อให้สามารถรับข้อมูลจากฟอร์มได้
+app.use(express.urlencoded({ extended: true }));
+
+
+// ตั้งค่า session
+app.use(cookieSession({
+    name: 'session',
+    keys: ['key1', 'key2'], // คีย์สำหรับเข้ารหัสคุกกี้ session
+    maxAge: 24 * 60 * 60 * 1000 // อายุของ session ใน millisecond (ในที่นี้คือ 1 วัน)
+}));
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -339,23 +350,22 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
 
 
   
-//Notification
+
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(':memory:');
+const db = new sqlite3.Database('nodejs_login (5).sql');
 
+// สร้างตาราง notifications ในฐานข้อมูล sqlite3
 db.serialize(() => {
-  db.run(`CREATE TABLE notifications (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_profile_image TEXT,
-    user_name TEXT,
-    message TEXT
-  )`);
-});
-
-module.exports = db;
-
-
-app.post('/confirm-exchange', (req, res) => {
+    db.run(`CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_profile_image TEXT,
+      user_name TEXT,
+      message TEXT
+    )`);
+  });
+  
+  // เส้นทางสำหรับยืนยันการแลกเปลี่ยน
+  app.post('/confirm-exchange', (req, res) => {
     const exchangeData = req.body;
     console.log('คำร้องแลกเปลี่ยนที่ได้รับ:', exchangeData);
   
@@ -368,23 +378,21 @@ app.post('/confirm-exchange', (req, res) => {
       }
       res.json({ message: 'ยืนยันการแลกเปลี่ยนสำเร็จ', id: this.lastID });
     });
-});
+  });
   
-// Route สำหรับแสดงหน้าการแจ้งเตือน
-app.get('/notifications', (req, res) => {
+  // เส้นทางสำหรับแสดงหน้าการแจ้งเตือน
+  app.get('/notifications', (req, res) => {
     const sql = `SELECT * FROM notifications`;
     db.all(sql, [], (err, rows) => {
       if (err) {
         throw err;
       }
       res.render('notifications', {
-        name: req.session.userName,
-        notifications: rows
+        name: req.session.userName, // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
+        notifications: rows // ส่งตัวแปร notifications ไปด้วย
       });
     });
-});
-
-
+  });
 
 
 
