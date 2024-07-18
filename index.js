@@ -352,8 +352,9 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
   
 
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('nodejs_login (5).sql');
+const db = new sqlite3.Database('notifications');
 
+/*
 // สร้างตาราง notifications ในฐานข้อมูล sqlite3
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS notifications (
@@ -361,31 +362,104 @@ db.serialize(() => {
       user_profile_image TEXT,
       user_name TEXT,
       message TEXT
-    )`);
-  });
-  
-  // เส้นทางสำหรับยืนยันการแลกเปลี่ยน
-  app.post('/confirm-exchange', (req, res) => {
+    )`, (err) => {
+      if (err) {
+        console.error('Error creating table:', err.message);
+      } else {
+        console.log('Table created successfully');
+        // ตรวจสอบว่าคอลัมน์ status มีอยู่แล้วหรือไม่
+        db.all(`PRAGMA table_info(notifications)`, (err, columns) => {
+          if (err) {
+            console.error('Error checking table info:', err.message);
+            db.close((err) => {
+              if (err) {
+                console.error('Error closing the database:', err.message);
+              }
+            });
+            return;
+          }
+          const hasStatusColumn = columns.some(column => column.name === 'status');
+          if (!hasStatusColumn) {
+            // เพิ่มคอลัมน์ status ถ้าไม่มี
+            db.run(`ALTER TABLE notifications ADD COLUMN status TEXT DEFAULT 'pending'`, (err) => {
+              if (err) {
+                console.error('Error adding column "status":', err.message);
+              } else {
+                console.log('Column "status" added successfully');
+              }
+              db.close((err) => {
+                if (err) {
+                  console.error('Error closing the database:', err.message);
+                } else {
+                  console.log('Database connection closed');
+                }
+              });
+            });
+          } else {
+            console.log('Column "status" already exists');
+            db.close((err) => {
+              if (err) {
+                console.error('Error closing the database:', err.message);
+              } else {
+                console.log('Database connection closed');
+              }
+            });
+          }
+        });
+      }
+    });
+  });*/
+ 
+// เส้นทางสำหรับยืนยันการแลกเปลี่ยน
+app.post('/confirm-exchange', (req, res) => {
     const exchangeData = req.body;
     console.log('คำร้องแลกเปลี่ยนที่ได้รับ:', exchangeData);
   
-    const sql = `INSERT INTO notifications (user_profile_image, user_name, message)
-                 VALUES (?, ?, ?)`;
+    const sql = `INSERT INTO notifications (user_profile_image, user_name, message, status)
+                 VALUES (?, ?, ?, 'pending')`;
     const params = ['/images/default-profile.png', exchangeData.user_name, `ต้องการสินค้าของคุณ`];
     db.run(sql, params, function(err) {
       if (err) {
         return console.error(err.message);
+        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการยืนยันการแลกเปลี่ยน' });    
       }
       res.json({ message: 'ยืนยันการแลกเปลี่ยนสำเร็จ', id: this.lastID });
     });
+});
+  
+// เส้นทางสำหรับยอมรับการแจ้งเตือน
+app.post('/accept-notification', (req, res) => {
+    const { id } = req.body;
+    const sql = `UPDATE notifications SET status = 'accepted' WHERE id = ?`;
+    db.run(sql, [id], function(err) {
+      if (err) {
+        console.error('Error accepting notification:', err.message);
+        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการยอมรับการแจ้งเตือน' });
+      }
+      res.json({ message: 'การแจ้งเตือนถูกยอมรับแล้ว' });
+    });
   });
   
-  // เส้นทางสำหรับแสดงหน้าการแจ้งเตือน
-  app.get('/notifications', (req, res) => {
+  // เส้นทางสำหรับปฏิเสธการแจ้งเตือน
+  app.post('/reject-notification', (req, res) => {
+    const { id } = req.body;
+    const sql = `DELETE FROM notifications WHERE id = ?`;
+    db.run(sql, [id], function(err) {
+      if (err) {
+        console.error('Error rejecting notification:', err.message);
+        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการปฏิเสธการแจ้งเตือน' });
+      }
+      res.json({ message: 'การแจ้งเตือนถูกปฏิเสธแล้ว' });
+    });
+  });
+
+// เส้นทางสำหรับแสดงหน้าการแจ้งเตือน
+app.get('/notifications', (req, res) => {
     const sql = `SELECT * FROM notifications`;
     db.all(sql, [], (err, rows) => {
       if (err) {
-        throw err;
+        console.error(err);
+        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลการแจ้งเตือน' });
       }
       res.render('notifications', {
         name: req.session.userName, // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
@@ -393,10 +467,6 @@ db.serialize(() => {
       });
     });
   });
-
-
-
-
 
 
 

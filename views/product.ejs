@@ -99,18 +99,19 @@
 
 
 <!-- ป๊อปอัพสำหรับการยืนยันการแลกเปลี่ยน -->
-<div id="exchangePopup" class="popup">
+<div id="exchangePopup" class="popup" style="display: none;">
   <div class="popup-content">
     <p>คุณต้องการยืนยันการแลกเปลี่ยนหรือไม่?</p>
     <button id="confirmExchange" class="btn btn-success">ยืนยัน</button>
     <button id="cancelExchange" class="btn btn-danger">ยกเลิก</button>
+
   </div>
 </div>
-
+<!-- ปุ่มยืนยันการแลกเปลี่ยน -->
+<button class="btn btn-primary btn-exchange">ยืนยันการแลกเปลี่ยน</button>
 
 <!-- สคริปป๊อปอัพสำหรับการยืนยันการแลกเปลี่ยน -->
 <script>
-
 document.querySelectorAll('.btn-exchange').forEach(button => {
   button.addEventListener('click', function() {
     const popup = document.getElementById('exchangePopup');
@@ -119,16 +120,32 @@ document.querySelectorAll('.btn-exchange').forEach(button => {
 });
 
 document.getElementById('confirmExchange').addEventListener('click', function() {
-  // โค้ดจัดการการยืนยันการแลกเปลี่ยน
-  console.log('แลกเปลี่ยนยืนยัน');
-  document.getElementById('exchangePopup').style.display = 'none';
+  // สร้างข้อมูลการยืนยันการแลกเปลี่ยน
+  const exchangeData = {
+    user_name: ' '
+  };
+
+  // ส่งข้อมูลการยืนยันการแลกเปลี่ยนไปยังเซิร์ฟเวอร์
+  fetch('/confirm-exchange', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(exchangeData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('แลกเปลี่ยนยืนยัน:', data);
+    document.getElementById('exchangePopup').style.display = 'none';
+    // คุณสามารถเพิ่มการอัพเดทการแจ้งเตือนที่แสดงในหน้านี้ได้ถ้าต้องการ
+    location.reload(); // โหลดหน้าเว็บใหม่เพื่ออัพเดทการแจ้งเตือน
+  })
+  .catch(error => console.error('เกิดข้อผิดพลาด:', error));
 });
 
 document.getElementById('cancelExchange').addEventListener('click', function() {
   document.getElementById('exchangePopup').style.display = 'none';
 });
-
-
 </script>
 
 

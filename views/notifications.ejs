@@ -48,12 +48,14 @@
     <div id="notifications">
       <% if (notifications && notifications.length > 0) { %>
         <% notifications.forEach(notification => { %>
-          <div class="notification card mb-3">
+          <div class="notification card mb-3" data-id="<%= notification.id %>">
             <div class="card-body">
               <img src="<%= notification.user_profile_image %>" alt="Profile Image" class="img-thumbnail" style="width: 50px;">
               <p><%= notification.user_name %> <%= notification.message %></p>
-              <button class="btn btn-success">ยอมรับ</button>
-              <button class="btn btn-danger">ปฏิเสธ</button>
+              <% if (notification.status === 'pending') { %>
+                <button class="btn btn-success btn-accept">ยอมรับ</button>
+                <button class="btn btn-danger btn-reject">ปฏิเสธ</button>
+              <% } %>
             </div>
           </div>
         <% }) %>
@@ -61,12 +63,49 @@
         <p>ไม่มีการแจ้งเตือน</p>
       <% } %>
     </div>
-</div>
+  </div>
 
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
     integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+      $(document).ready(function () {
+        $('.btn-accept').click(function() {
+          const notificationId = $(this).closest('.notification').data('id');
+          $.ajax({
+            url: '/accept-notification',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ id: notificationId }),
+            success: function(response) {
+              console.log('ยอมรับการแจ้งเตือน:', response);
+              location.reload();
+            },
+            error: function(error) {
+              console.error('เกิดข้อผิดพลาดในการยอมรับการแจ้งเตือน:', error);
+            }
+          });
+        });
+    
+        $('.btn-reject').click(function() {
+          const notificationId = $(this).closest('.notification').data('id');
+          $.ajax({
+            url: '/reject-notification',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ id: notificationId }),
+            success: function(response) {
+              console.log('ปฏิเสธการแจ้งเตือน:', response);
+              location.reload();
+            },
+            error: function(error) {
+              console.error('เกิดข้อผิดพลาดในการปฏิเสธการแจ้งเตือน:', error);
+            }
+          });
+        });
+      });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js">
   </script>
   <script>
