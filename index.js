@@ -352,64 +352,57 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
   
 
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('notifications');
+// กำหนด dbPath ให้ชี้ไปยังตำแหน่งที่ตั้งของไฟล์ฐานข้อมูล SQLite
+const dbPath = path.resolve(__dirname, 'notifications');
 
+// เชื่อมต่อกับฐานข้อมูล
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับฐานข้อมูล:', err);
+  } else {
+    console.log('เชื่อมต่อกับฐานข้อมูลเรียบร้อยแล้ว');
+  }
+});
 /*
-// สร้างตาราง notifications ในฐานข้อมูล sqlite3
-db.serialize(() => {
-    db.run(`CREATE TABLE IF NOT EXISTS notifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_profile_image TEXT,
-      user_name TEXT,
-      message TEXT
-    )`, (err) => {
+// ตรวจสอบคอลัมน์ในตาราง notifications
+db.all("PRAGMA table_info(notifications)", (err, columns) => {
+  if (err) {
+    console.error('เกิดข้อผิดพลาดในการตรวจสอบคอลัมน์:', err);
+    return;
+  }
+
+  // ตรวจสอบว่ามีคอลัมน์ user_id หรือไม่
+  const hasUserIdColumn = columns.some(column => column.name === 'user_id');
+  // ตรวจสอบว่ามีคอลัมน์ status หรือไม่
+  const hasStatusColumn = columns.some(column => column.name === 'status');
+
+  // เพิ่มคอลัมน์ user_id หากยังไม่มี
+  if (!hasUserIdColumn) {
+    db.run("ALTER TABLE notifications ADD COLUMN user_id INTEGER", (err) => {
       if (err) {
-        console.error('Error creating table:', err.message);
+        console.error('เกิดข้อผิดพลาดในการเพิ่มคอลัมน์ user_id:', err);
       } else {
-        console.log('Table created successfully');
-        // ตรวจสอบว่าคอลัมน์ status มีอยู่แล้วหรือไม่
-        db.all(`PRAGMA table_info(notifications)`, (err, columns) => {
-          if (err) {
-            console.error('Error checking table info:', err.message);
-            db.close((err) => {
-              if (err) {
-                console.error('Error closing the database:', err.message);
-              }
-            });
-            return;
-          }
-          const hasStatusColumn = columns.some(column => column.name === 'status');
-          if (!hasStatusColumn) {
-            // เพิ่มคอลัมน์ status ถ้าไม่มี
-            db.run(`ALTER TABLE notifications ADD COLUMN status TEXT DEFAULT 'pending'`, (err) => {
-              if (err) {
-                console.error('Error adding column "status":', err.message);
-              } else {
-                console.log('Column "status" added successfully');
-              }
-              db.close((err) => {
-                if (err) {
-                  console.error('Error closing the database:', err.message);
-                } else {
-                  console.log('Database connection closed');
-                }
-              });
-            });
-          } else {
-            console.log('Column "status" already exists');
-            db.close((err) => {
-              if (err) {
-                console.error('Error closing the database:', err.message);
-              } else {
-                console.log('Database connection closed');
-              }
-            });
-          }
-        });
+        console.log('เพิ่มคอลัมน์ user_id เรียบร้อยแล้ว');
       }
     });
-  });*/
- 
+  } else {
+    console.log('คอลัมน์ user_id มีอยู่แล้ว');
+  }
+
+  // เพิ่มคอลัมน์ status หากยังไม่มี
+  if (!hasStatusColumn) {
+    db.run("ALTER TABLE notifications ADD COLUMN status TEXT", (err) => {
+      if (err) {
+        console.error('เกิดข้อผิดพลาดในการเพิ่มคอลัมน์ status:', err);
+      } else {
+        console.log('เพิ่มคอลัมน์ status เรียบร้อยแล้ว');
+      }
+    });
+  } else {
+    console.log('คอลัมน์ status มีอยู่แล้ว');
+  }
+});*/
+
 // เส้นทางสำหรับยืนยันการแลกเปลี่ยน
 app.post('/confirm-exchange', (req, res) => {
     const exchangeData = req.body;
@@ -429,16 +422,29 @@ app.post('/confirm-exchange', (req, res) => {
   
 // เส้นทางสำหรับยอมรับการแจ้งเตือน
 app.post('/accept-notification', (req, res) => {
-    const { id } = req.body;
-    const sql = `UPDATE notifications SET status = 'accepted' WHERE id = ?`;
-    db.run(sql, [id], function(err) {
-      if (err) {
-        console.error('Error accepting notification:', err.message);
-        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการยอมรับการแจ้งเตือน' });
-      }
-      res.json({ message: 'การแจ้งเตือนถูกยอมรับแล้ว' });
+    const notificationId = req.body.id;
+    const db = new sqlite3.Database(dbPath);
+  
+    db.serialize(() => {
+      db.run("UPDATE notifications SET status = 'ได้รับการแลกเปลี่ยนแล้ว' WHERE id = ?", [notificationId], function(err) {
+        if (err) {
+          console.error('เกิดข้อผิดพลาดในการอัพเดตสถานะการแจ้งเตือน:', err);
+          res.status(500).send('เกิดข้อผิดพลาดในการอัพเดตสถานะการแจ้งเตือน');
+        } else {
+          console.log(`การแจ้งเตือน ID ${notificationId} ถูกอัพเดตสถานะเรียบร้อยแล้ว`);
+          res.send('การแจ้งเตือนถูกอัพเดตสถานะเรียบร้อยแล้ว');
+        }
+      });
     });
-  });
+  
+    db.close((err) => {
+      if (err) {
+        console.error('เกิดข้อผิดพลาดในการปิดฐานข้อมูล:', err);
+      } else {
+        console.log('ปิดฐานข้อมูลเรียบร้อยแล้ว');
+      }
+    });
+  });  
   
   // เส้นทางสำหรับปฏิเสธการแจ้งเตือน
   app.post('/reject-notification', (req, res) => {
