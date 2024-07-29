@@ -42,6 +42,65 @@
     </div>
   </nav>
 
+  <div class="container mt-4">
+    <h1>การแจ้งเตือน</h1>
+    <p>ยินดีต้อนรับ, <%= name %></p>
+    <div id="notifications">
+        <% if (notifications && notifications.length > 0) { %>
+            <% notifications.forEach(notification => { %>
+                <div class="notification card mb-3">
+                    <div class="card-body">
+                        <p><%= notification.message %></p>
+                        <button class="btn btn-success" data-id="<%= notification.id %>">ยอมรับ</button>
+                        <button class="btn btn-danger" data-id="<%= notification.id %>">ปฏิเสธ</button>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <p>ไม่มีการแจ้งเตือน</p>
+        <% } %>
+    </div>
+</div>
+
+
+  <script>
+     $(document).ready(function() {
+            $('.btn-success, .btn-danger').click(function() {
+                const button = $(this);
+                const action = button.hasClass('btn-success') ? 'accept' : 'reject';
+                const exchangeId = button.data('id');
+
+                $.ajax({
+                    type: 'POST',
+                    url: `/handle-exchange/${exchangeId}`,
+                    data: { action: action },
+                    success: function(response) {
+                        alert(response.message);
+                        button.closest('.notification').remove();
+                    },
+                    error: function(error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        });
+    </script>
+    
+    <% notifications.forEach(notification => { %>
+        <div class="notification card mb-3">
+            <div class="card-body">
+                <img src="<%= notification.user_profile_image %>" alt="Profile Image" class="img-thumbnail" style="width: 50px;">
+                <p><%= notification.message %></p>
+                <button class="btn btn-success" data-id="<%= notification.id %>">ยอมรับ</button>
+                <button class="btn btn-danger" data-id="<%= notification.id %>">ปฏิเสธ</button>
+            </div>
+        </div>
+    <% }) %>
+
+    
+
+
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
     integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>

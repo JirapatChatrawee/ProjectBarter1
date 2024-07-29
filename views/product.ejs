@@ -86,16 +86,14 @@
     <div class="chat-header"> ลงสินค้าโดย <span id="chat-product-user"><%= product.user_name %></span></div>
     <div class="chat-messages" id="chat-messages"></div>
     <div class="chat-input">
-      <input type="text" id="chat-input" placeholder="พิมพ์ข้อความของคุณ...">
-      <button id="send-message">ส่ง</button>
- 
-      <label class="camera-icon">
-        📷
-        <input type="file" class="hidden-file-input" accept="image/*" />
-    </label>
-    
+        <input type="text" id="chat-input" placeholder="พิมพ์ข้อความของคุณ...">
+        <button id="send-message">ส่ง</button>
+        <label class="camera-icon">
+            📷
+            <input type="file" class="hidden-file-input" accept="image/*" />
+        </label>
     </div>
-  </div>
+</div>
 
 
 <!-- ป๊อปอัพสำหรับการยืนยันการแลกเปลี่ยน -->
@@ -104,8 +102,35 @@
     <p>คุณต้องการยืนยันการแลกเปลี่ยนหรือไม่?</p>
     <button id="confirmExchange" class="btn btn-success">ยืนยัน</button>
     <button id="cancelExchange" class="btn btn-danger">ยกเลิก</button>
+    <input type="hidden" id="productId" value="<%= product.id %>">
+
   </div>
 </div>
+
+<!--ส่งแจ้ง-->
+
+<script>
+ $('#confirmExchange').click(function() {
+    const exchangeData = {
+        user_name: 'User1', // ค่าที่ต้องการส่งไปกับคำร้อง สามารถเปลี่ยนได้
+        product_id: $('#productId').val()
+    };
+
+    $.ajax({
+        type: 'POST',
+        url: '/confirm-exchange',
+        data: exchangeData,
+        success: function(response) {
+            alert(response.message);
+            window.location.href = '/notifications';
+        },
+        error: function(error) {
+            console.error('Error:', error);
+        }
+    });
+});
+
+</script>
 
 
 <!-- สคริปป๊อปอัพสำหรับการยืนยันการแลกเปลี่ยน -->

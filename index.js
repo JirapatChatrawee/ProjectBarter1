@@ -342,13 +342,74 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
 
 
 
+app.post('/confirm-exchange', ifNotLoggedIn, async (req, res) => {
+    const { user_name, product_id } = req.body;
+    const requester_id = req.session.userID;
 
+    try {
+        await dbConnection.execute('INSERT INTO exchanges (requester_id, product_id) VALUES (?, ?)', [requester_id, product_id]);
 
-app.get('/notifications', function (req, res) {
-    res.render('notifications', {
-        name: req.session.userName // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
-    });
+        const [rows] = await dbConnection.execute('SELECT id FROM users WHERE name = ?', [user_name]);
+        if (rows.length > 0) {
+            const user_id = rows[0].id;
+            const message = `มีคำร้องขอแลกเปลี่ยนสินค้าจาก ${req.session.userName}`;
+            const [result] = await dbConnection.execute('INSERT INTO notifications (user_id, message) VALUES (?, ?)', [user_id, message]);
+
+            if (result.affectedRows > 0) {
+                res.json({ message: 'ยืนยันการแลกเปลี่ยนสำเร็จ' });
+            } else {
+                res.status(500).send('เกิดข้อผิดพลาดขณะสร้างการแจ้งเตือน');
+            }
+        } else {
+            res.status(404).send('User not found');
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('เกิดข้อผิดพลาดขณะยืนยันการแลกเปลี่ยน');
+    }
 });
+
+
+app.get('/notifications', ifNotLoggedIn, async (req, res) => {
+    try {
+        const [rows] = await dbConnection.execute('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC', [req.session.userID]);
+        
+        res.render('notifications', {
+            name: req.session.userName,
+            notifications: rows
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('เกิดข้อผิดพลาดขณะดึงข้อมูลการแจ้งเตือน');
+    }
+});
+
+
+app.post('/handle-exchange/:id', ifNotLoggedIn, async (req, res) => {
+    const exchangeId = req.params.id;
+    const { action } = req.body;
+
+    const newStatus = action === 'accept' ? 'accepted' : 'rejected';
+    try {
+        await dbConnection.execute('UPDATE exchanges SET status = ? WHERE id = ?', [newStatus, exchangeId]);
+        res.json({ message: `คำร้องขอแลกเปลี่ยนถูก${newStatus === 'accepted' ? 'ยอมรับ' : 'ปฏิเสธ'}เรียบร้อยแล้ว` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('เกิดข้อผิดพลาดขณะอัปเดตสถานะการแลกเปลี่ยน');
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -393,7 +454,6 @@ app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
 
 
 
-// เส้นทางสำหรับแก้ไขสินค้า (GET)
 app.get('/edit-product/:product_id', ifNotLoggedIn, function (req, res) {
     const productId = req.params.product_id;
     const query = 'SELECT * FROM products WHERE id = ?';
@@ -404,7 +464,48 @@ app.get('/edit-product/:product_id', ifNotLoggedIn, function (req, res) {
                 const product = rows[0];
                 // ตรวจสอบว่าผู้ใช้เป็นเจ้าของสินค้าหรือไม่
                 if (product.user_id !== req.session.userID) {
-                    return res.status(403).send('คุณไม่มีสิทธิ์ในการแก้ไขผลิตภัณฑ์นี้');
+                    return res.status(403).send(`
+                        <html>
+                        <head>
+                            <style>
+                                body {
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    justify-content: center;
+                                    height: 100vh;
+                                    margin: 0;
+                                }
+                                .error-message {
+                                    font-size: 24px;
+                                    color: red;
+                                    font-weight: bold;
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                }
+                                .back-button {
+                                    display: block;
+                                    width: 200px;
+                                    padding: 10px;
+                                    font-size: 18px;
+                                    text-align: center;
+                                    color: white;
+                                    background-color: blue;
+                                    border: none;
+                                    border-radius: 5px;
+                                    cursor: pointer;
+                                }
+                                .back-button:hover {
+                                    background-color: darkblue;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="error-message">คุณไม่มีสิทธิ์ในการแก้ไขผลิตภัณฑ์นี้</div>
+                            <button class="back-button" onclick="window.location.href='/'">กลับไปหน้า Home</button>
+                        </body>
+                        </html>
+                    `);
                 }
                 return res.render('edit-product', { product });
             } else {
@@ -468,7 +569,6 @@ app.post('/edit-product/:product_id', ifNotLoggedIn, upload.single('image'), fun
 
 
 // เส้นทางสำหรับลบสินค้า (POST)
-// เส้นทางสำหรับลบสินค้า (POST)
 app.post('/delete-product/:product_id', ifNotLoggedIn, function (req, res) {
     const productId = req.params.product_id;
     
@@ -480,11 +580,93 @@ app.post('/delete-product/:product_id', ifNotLoggedIn, function (req, res) {
             if (rows.length > 0) {
                 const product = rows[0];
                 if (product.user_id !== req.session.userID) {
-                    return res.status(403).send('คุณไม่มีสิทธิ์ในการลบผลิตภัณฑ์นี้');
+                    return res.status(403).send(`
+                        <html>
+                        <head>
+                            <style>
+                                body {
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: center;
+                                    justify-content: center;
+                                    height: 100vh;
+                                    margin: 0;
+                                }
+                                .error-message {
+                                    font-size: 24px;
+                                    color: red;
+                                    font-weight: bold;
+                                    text-align: center;
+                                    margin-bottom: 20px;
+                                }
+                                .back-button {
+                                    display: block;
+                                    width: 200px;
+                                    padding: 10px;
+                                    font-size: 18px;
+                                    text-align: center;
+                                    color: white;
+                                    background-color: blue;
+                                    border: none;
+                                    border-radius: 5px;
+                                    cursor: pointer;
+                                }
+                                .back-button:hover {
+                                    background-color: darkblue;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="error-message">คุณไม่มีสิทธิ์ในการลบผลิตภัณฑ์นี้</div>
+                            <button class="back-button" onclick="window.location.href='/'">กลับไปหน้า Home</button>
+                        </body>
+                        </html>
+                    `);
                 }
                 return dbConnection.execute(deleteQuery, [productId]);
             } else {
-                return res.status(404).send('ไม่พบผลิตภัณฑ์');
+                return res.status(404).send(`
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                height: 100vh;
+                                margin: 0;
+                            }
+                            .error-message {
+                                font-size: 24px;
+                                color: red;
+                                font-weight: bold;
+                                text-align: center;
+                                margin-bottom: 20px;
+                            }
+                            .back-button {
+                                display: block;
+                                width: 200px;
+                                padding: 10px;
+                                font-size: 18px;
+                                text-align: center;
+                                color: white;
+                                background-color: blue;
+                                border: none;
+                                border-radius: 5px;
+                                cursor: pointer;
+                            }
+                            .back-button:hover {
+                                background-color: darkblue;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="error-message">ไม่พบผลิตภัณฑ์</div>
+                        <button class="back-button" onclick="window.location.href='/'">กลับไปหน้า Home</button>
+                    </body>
+                    </html>
+                `);
             }
         })
         .then(() => {
@@ -495,10 +677,52 @@ app.post('/delete-product/:product_id', ifNotLoggedIn, function (req, res) {
             console.error(err);
             // ตรวจสอบว่าไม่ได้ส่งคำตอบมากกว่าหนึ่งครั้ง
             if (!res.headersSent) {
-                res.status(500).send('เกิดข้อผิดพลาดขณะลบผลิตภัณฑ์');
+                res.status(500).send(`
+                    <html>
+                    <head>
+                        <style>
+                            body {
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                justify-content: center;
+                                height: 100vh;
+                                margin: 0;
+                            }
+                            .error-message {
+                                font-size: 24px;
+                                color: red;
+                                font-weight: bold;
+                                text-align: center;
+                                margin-bottom: 20px;
+                            }
+                            .back-button {
+                                display: block;
+                                width: 200px;
+                                padding: 10px;
+                                font-size: 18px;
+                                text-align: center;
+                                color: white;
+                                background-color: blue;
+                                border: none;
+                                border-radius: 5px;
+                                cursor: pointer;
+                            }
+                            .back-button:hover {
+                                background-color: darkblue;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="error-message">เกิดข้อผิดพลาดขณะลบผลิตภัณฑ์</div>
+                        <button class="back-button" onclick="window.location.href='/'">กลับไปหน้า Home</button>
+                    </body>
+                    </html>
+                `);
             }
         });
 });
+
 
 
 
@@ -546,8 +770,6 @@ app.get('/search', ifNotLoggedIn, (req, res) => {
 
 
 
-
-// Handle chat message
 io.on('connection', (socket) => {
     console.log('A user connected');
     const userName = socket.handshake.query.userName;
@@ -558,6 +780,12 @@ io.on('connection', (socket) => {
 
     socket.on('chat message', (msg) => {
         const userID = msg.userID;
+
+        if (!userID || !userName || !msg.message || !msg.productUser) {
+            console.error('One or more parameters are missing or undefined for chat message');
+            return;
+        }
+
         const messageData = {
             user_id: userID,
             user_name: userName,
@@ -566,11 +794,11 @@ io.on('connection', (socket) => {
             timestamp: new Date(),
             time: new Date().toLocaleTimeString()
         };
-        // Save message to database
+
         dbConnection.execute(
             'INSERT INTO chat_messages (user_id, user_name, message, product_user, timestamp) VALUES (?, ?, ?, ?, ?)',
             [messageData.user_id, messageData.user_name, messageData.message, messageData.product_user, messageData.timestamp]
-        ).then(result => {
+        ).then(() => {
             io.emit('chat message', messageData);
         }).catch(err => {
             console.error(err);
@@ -579,6 +807,12 @@ io.on('connection', (socket) => {
 
     socket.on('chat image', (msg) => {
         const userID = msg.userID;
+
+        if (!userID || !userName || !msg.imageUrl || !msg.productUser) {
+            console.error('One or more parameters are missing or undefined for chat image');
+            return;
+        }
+
         const imageData = {
             user_id: userID,
             user_name: userName,
@@ -587,11 +821,11 @@ io.on('connection', (socket) => {
             timestamp: new Date(),
             time: new Date().toLocaleTimeString()
         };
-        // Save image message to database
+
         dbConnection.execute(
             'INSERT INTO chat_messages (user_id, user_name, product_user, timestamp, image_url) VALUES (?, ?, ?, ?, ?)',
             [imageData.user_id, imageData.user_name, imageData.product_user, imageData.timestamp, imageData.image_url]
-        ).then(result => {
+        ).then(() => {
             io.emit('chat image', imageData);
         }).catch(err => {
             console.error(err);
@@ -604,27 +838,16 @@ io.on('connection', (socket) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Get chat history and render the save-offer page
 app.get('/save-offer', ifNotLoggedIn, (req, res) => {
     dbConnection.execute(
         'SELECT * FROM chat_messages WHERE user_id = ? ORDER BY timestamp ASC',
-        [req.session.userID] // เพิ่ม req.session.userID เป็นค่า parameter ใน SQL query
+        [req.session.userID]
     ).then(([rows]) => {
         res.render('save-offer', {
             name: req.session.userName,
-            messages: rows // Pass the messages data to the save-offer template
+            userID: req.session.userID,
+            messages: rows
         });
     }).catch(err => {
         console.error(err);
@@ -633,14 +856,12 @@ app.get('/save-offer', ifNotLoggedIn, (req, res) => {
 });
 
 // Get chat history for specific user and product user
-
 app.get('/chat-history/:productUser', ifNotLoggedIn, (req, res) => {
     const productUser = req.params.productUser;
     dbConnection.execute(
         'SELECT * FROM chat_messages WHERE (user_name = ? AND product_user = ?) OR (user_name = ? AND product_user = ?) ORDER BY timestamp ASC',
         [req.session.userName, productUser, productUser, req.session.userName]
     ).then(([rows]) => {
-        // Format timestamp before sending to client
         const messages = rows.map(row => ({
             ...row,
             time: new Date(row.timestamp).toLocaleString()
@@ -652,9 +873,17 @@ app.get('/chat-history/:productUser', ifNotLoggedIn, (req, res) => {
     });
 });
 
-
-
-
+app.get('/chat-partners', ifNotLoggedIn, (req, res) => {
+    dbConnection.execute(
+        'SELECT DISTINCT product_user FROM chat_messages WHERE user_name = ?',
+        [req.session.userName]
+    ).then(([rows]) => {
+        res.json(rows);
+    }).catch(err => {
+        console.error(err);
+        res.status(500).send('Error occurred while fetching chat partners.');
+    });
+});
 
 app.post('/upload-image', upload.single('image'), (req, res) => {
     const tempPath = req.file.path;
@@ -667,8 +896,6 @@ app.post('/upload-image', upload.single('image'), (req, res) => {
         res.json({ success: true, url: imageUrl });
     });
 });
-
-
 
 
 

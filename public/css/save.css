@@ -1,0 +1,255 @@
+.loader {
+    width: 48px;
+    height: 48px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition: opacity 1s ease-in-out;
+}
+
+.loader.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loader:before {
+    content: '';
+    width: 48px;
+    height: 5px;
+    background: #f0808050;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    border-radius: 50%;
+    animation: shadow324 0.5s linear infinite;
+}
+
+.loader:after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: #f08080;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 4px;
+    animation: jump7456 0.5s linear infinite;
+}
+
+@keyframes jump7456 {
+    15% {
+        border-bottom-right-radius: 3px;
+    }
+
+    25% {
+        transform: translateY(9px) rotate(22.5deg);
+    }
+
+     50% {
+        transform: translateY(18px) scale(1, .9) rotate(45deg);
+        border-bottom-right-radius: 40px;
+    }
+
+     75% {
+        transform: translateY(9px) rotate(67.5deg);
+    }
+
+     100% {
+        transform: translateY(0) rotate(90deg);
+    }
+}
+
+@keyframes shadow324 {
+    0%, 100% {
+        transform: scale(1, 1);
+    }
+
+     50% {
+        transform: scale(1.5, 1);
+    }
+}
+
+
+
+.navbar-brand img {
+    height: 100px;
+    width: 250px;
+  }
+
+  .navbar-nav .nav-link {
+    font-size: 1.5rem;
+    margin-left: 2rem;
+  }
+
+  .navbar-text {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s;
+  }
+
+  .card:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+  }
+
+  .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-title,
+  .card-text {
+    font-family: 'Arial', sans-serif;
+  }
+
+  .card-text strong {
+    color: orange;
+  }
+
+  .card-img-top {
+    object-fit: cover;
+    height: 200px;
+  }
+
+  /* Animation to hide and show navbar */
+  @keyframes slideDown {
+    0% {
+      transform: translateY(-100%);
+    }
+
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  .navbar {
+    animation: slideDown 1s forwards;
+    /* Keep navbar shown after animation */
+  }
+
+  .hidden {
+    display: none;
+    /* Hide navbar initially */
+  }
+
+
+
+
+
+
+.hidden-file-input {
+    display: none;
+}
+
+.camera-icon {
+    cursor: pointer;
+    font-size: 24px;
+    padding: 5px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.navbar {
+    flex-shrink: 0;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.flex-grow-1 {
+    flex-grow: 1;
+}
+
+.sidebar {
+    width: 20%;
+    background-color: #f7f7f7;
+    padding: 10px;
+}
+
+.chat {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #ddd;
+    position: relative;
+}
+
+.messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.input-area {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.input-area input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.input-area button {
+    margin-left: 10px;
+}
+
+.contact {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.contact:hover {
+    background-color: #ddd;
+}
+
+.message {
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message.sent {
+    align-self: flex-end;
+    background-color: #dcf8c6;
+    padding: 10px;
+     margin-left: auto;
+    border-radius: 10px 10px 0 10px;
+}
+
+.message.received {
+    align-self: flex-start;
+    background-color: #f1ececf6;
+    padding: 10px;
+    border-radius: 10px 10px 10px 0;
+}
+
+.message img {
+    max-width: 100%; /* ปรับขนาดของรูปภาพ */
+    border-radius: 5px;
+}
+
+.message small {
+    display: block;
+    margin-top: 5px;
+    color: #888;
+    font-size: 0.8em;
+}
