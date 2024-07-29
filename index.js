@@ -353,16 +353,46 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
 
 const sqlite3 = require('sqlite3').verbose();
 // กำหนด dbPath ให้ชี้ไปยังตำแหน่งที่ตั้งของไฟล์ฐานข้อมูล SQLite
-const dbPath = path.resolve(__dirname, 'notifications');
+const dbPath = path.resolve(__dirname, 'notifications.sql');
 
 // เชื่อมต่อกับฐานข้อมูล
-const db = new sqlite3.Database(dbPath, (err) => {
+const db = new sqlite3.Database('./notifications.sql', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
   if (err) {
     console.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับฐานข้อมูล:', err);
   } else {
     console.log('เชื่อมต่อกับฐานข้อมูลเรียบร้อยแล้ว');
   }
+
+  /*
+  // เพิ่มคอลัมน์ image_path ถ้ายังไม่มี
+  db.run(`ALTER TABLE notifications ADD COLUMN image_path TEXT`, (err) => {
+    if (err) {
+      if (err.message.includes("duplicate column name")) {
+        console.log("Column image_path already exists.");
+      } else {
+        console.error(err.message);
+      }
+    } else {
+      console.log("Column image_path added successfully.");
+    }
+  })*/
 });
+
+db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_profile_image TEXT,
+      user_name TEXT,
+      message TEXT,
+      user_id INTEGER
+    )`);
+  
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_name TEXT,
+      user_profile_image TEXT
+    )`);
+  });
 /*
 // ตรวจสอบคอลัมน์ในตาราง notifications
 db.all("PRAGMA table_info(notifications)", (err, columns) => {
@@ -405,20 +435,30 @@ db.all("PRAGMA table_info(notifications)", (err, columns) => {
 
 // เส้นทางสำหรับยืนยันการแลกเปลี่ยน
 app.post('/confirm-exchange', (req, res) => {
-    const exchangeData = req.body;
-    console.log('คำร้องแลกเปลี่ยนที่ได้รับ:', exchangeData);
+    const { user_name, user_id } = req.body;
+    console.log(`Received exchange confirmation for user_name: ${user_name}, user_id: ${user_id}`);
   
-    const sql = `INSERT INTO notifications (user_profile_image, user_name, message, status)
-                 VALUES (?, ?, ?, 'pending')`;
-    const params = ['/images/default-profile.png', exchangeData.user_name, `ต้องการสินค้าของคุณ`];
-    db.run(sql, params, function(err) {
+    if (!user_name || !user_id) {
+      return res.status(400).json({ error: 'Invalid data' });
+    }
+  
+    const sql = `INSERT INTO notifications (user_profile_image, user_name, message, user_id) VALUES (?, ?, ?, ?)`;
+    const params = ['/images/default-profile.png', user_name, 'ต้องการสินค้าของคุณ', user_id];
+  
+    db.run(sql, params, function (err) {
       if (err) {
-        return console.error(err.message);
-        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการยืนยันการแลกเปลี่ยน' });    
+        console.error(err.message);
+        return res.status(500).json({ error: 'Failed to save notification' });
       }
-      res.json({ message: 'ยืนยันการแลกเปลี่ยนสำเร็จ', id: this.lastID });
+      console.log('Notification saved successfully:', params);
+  
+      // ส่งการแจ้งเตือนไปยังผู้ใช้
+      io.emit('exchange-confirmed', { user_name, user_id });
+  
+      // ส่ง response กลับไปยัง client
+      return res.json({ message: 'Exchange confirmed' });
     });
-});
+});  
   
 // เส้นทางสำหรับยอมรับการแจ้งเตือน
 app.post('/accept-notification', (req, res) => {
@@ -461,7 +501,10 @@ app.post('/accept-notification', (req, res) => {
 
 // เส้นทางสำหรับแสดงหน้าการแจ้งเตือน
 app.get('/notifications', (req, res) => {
-    const sql = `SELECT * FROM notifications`;
+    const sql = `SELECT notifications.*, users.user_profile_image, users.user_name
+                 FROM notifications
+                 JOIN users ON notifications.user_id = users.id`;
+  
     db.all(sql, [], (err, rows) => {
       if (err) {
         console.error(err);
@@ -472,10 +515,7 @@ app.get('/notifications', (req, res) => {
         notifications: rows // ส่งตัวแปร notifications ไปด้วย
       });
     });
-  });
-
-
-
+});
 
 
 

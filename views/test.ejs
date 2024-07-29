@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Test</title>
+</head>
+<body>
+<!-- ตัวอย่างป๊อปอัพพื้นฐาน -->
+  <div id="popupTest" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid black;">
+    <p>ทดสอบป๊อปอัพ</p>
+    <button id="closeTest">ปิด</button>
+  </div>
+  
+  <script>
+    document.getElementById('popupTest').style.display = 'block';
+    document.getElementById('closeTest').addEventListener('click', function() {
+      document.getElementById('popupTest').style.display = 'none';
+    });
+  </script>
+</body>
+</html>

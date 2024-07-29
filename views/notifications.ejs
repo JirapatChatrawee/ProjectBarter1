@@ -1,17 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
     crossorigin="anonymous">
-    <link rel="stylesheet" href="/css/notifications.css"> <!-- Link to your set.css file -->
- 
+  <link rel="stylesheet" href="/css/notifications.css"> <!-- Link to your CSS file -->
   <title>Document</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    socket.on('connect', () => {
+      console.log('Connected to server');
+    });
+    socket.on('new-notification', (notification) => {
+        const ul = document.getElementById('notifications');
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <img src="${notification.user_profile_image}" alt="Profile Image" width="50" height="50">
+            <strong>${notification.user_name}</strong>: ${notification.message}
+        `;
+        ul.appendChild(li);
+    });
+  </script>
 </head>
-
 <body>
   <div class="loader"></div>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark hidden">
@@ -32,16 +45,13 @@
             <a class="nav-link" href="settings">การตั้งค่าโปรไฟล์</a>
           </li>
         </ul>
-
         <span class="navbar-text me-3">
-            <%= name %>
+          <%= name %>
         </span>
-
         <a href="/logout" class="btn btn-danger">Logout</a>
       </div>
     </div>
   </nav>
-
   <div class="container mt-4">
     <h1>การแจ้งเตือน</h1>
     <p>ยินดีต้อนรับ, <%= name %></p>
@@ -55,8 +65,6 @@
               <% if (notification.status === 'pending') { %>
                 <button class="btn btn-success btn-accept">ยอมรับ</button>
                 <button class="btn btn-danger btn-reject">ปฏิเสธ</button>
-              <% } else if (notification.status === 'ได้รับการแลกเปลี่ยนแล้ว') { %>
-                <p class="text-success">ได้รับการแลกเปลี่ยนแล้ว</p>
               <% } %>
             </div>
           </div>
@@ -65,54 +73,49 @@
         <p>ไม่มีการแจ้งเตือน</p>
       <% } %>
     </div>
-  </div>
+  </div>  
   
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
-  integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
-  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-  $(document).ready(function () {
-    $('.btn-accept').click(function() {
-      const notificationId = $(this).closest('.notification').data('id');
-      $.ajax({
-        url: '/accept-notification',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ id: notificationId }),
-        success: function(response) {
-          console.log('ยอมรับการแจ้งเตือน:', response);
-          const notificationElement = $(`.notification[data-id=${notificationId}]`);
-          notificationElement.find('.btn-accept, .btn-reject').remove();
-          notificationElement.append('<p class="text-success">ได้รับการแลกเปลี่ยนแล้ว</p>');
-        },
-        error: function(error) {
-          console.error('เกิดข้อผิดพลาดในการยอมรับการแจ้งเตือน:', error);
-        }
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script>
+    $(document).ready(function () {
+      $('.btn-accept').click(function() {
+        const notificationId = $(this).closest('.notification').data('id');
+        $.ajax({
+          url: '/accept-notification',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ id: notificationId }),
+          success: function(response) {
+            console.log('ยอมรับการแจ้งเตือน:', response);
+            location.reload();
+          },
+          error: function(error) {
+            console.error('เกิดข้อผิดพลาดในการยอมรับการแจ้งเตือน:', error);
+          }
+        });
+      });
+
+      $('.btn-reject').click(function() {
+        const notificationId = $(this).closest('.notification').data('id');
+        $.ajax({
+          url: '/reject-notification',
+          type: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ id: notificationId }),
+          success: function(response) {
+            console.log('ปฏิเสธการแจ้งเตือน:', response);
+            location.reload();
+          },
+          error: function(error) {
+            console.error('เกิดข้อผิดพลาดในการปฏิเสธการแจ้งเตือน:', error);
+          }
+        });
       });
     });
-
-    $('.btn-reject').click(function() {
-      const notificationId = $(this).closest('.notification').data('id');
-      $.ajax({
-        url: '/reject-notification',
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({ id: notificationId }),
-        success: function(response) {
-          console.log('ปฏิเสธการแจ้งเตือน:', response);
-          $(`.notification[data-id=${notificationId}]`).remove();
-        },
-        error: function(error) {
-          console.error('เกิดข้อผิดพลาดในการปฏิเสธการแจ้งเตือน:', error);
-        }
-      });
-    });
-  });
-</script>
-
-  <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js">
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
   <script>
     $(document).ready(function () {
       setTimeout(function () {
@@ -121,7 +124,5 @@
       }, 2000); // 3 วินาที (3000 มิลลิวินาที)
     });
   </script>
-
 </body>
-
 </html>
