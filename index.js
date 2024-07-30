@@ -353,10 +353,10 @@ app.post('/settings', ifNotLoggedIn, upload.single('profile_image'), (req, res) 
 
 const sqlite3 = require('sqlite3').verbose();
 // กำหนด dbPath ให้ชี้ไปยังตำแหน่งที่ตั้งของไฟล์ฐานข้อมูล SQLite
-const dbPath = path.resolve(__dirname, 'notifications.sql');
+const dbPath = path.resolve(__dirname, 'notifications');
 
 // เชื่อมต่อกับฐานข้อมูล
-const db = new sqlite3.Database('./notifications.sql', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+const db = new sqlite3.Database('./notifications', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
   if (err) {
     console.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับฐานข้อมูล:', err);
   } else {
@@ -375,9 +375,9 @@ const db = new sqlite3.Database('./notifications.sql', sqlite3.OPEN_READWRITE | 
     } else {
       console.log("Column image_path added successfully.");
     }
-  })*/
+  })ู*/
 });
-
+/*
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS notifications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -392,7 +392,7 @@ db.serialize(() => {
       user_name TEXT,
       user_profile_image TEXT
     )`);
-  });
+  });*/
 /*
 // ตรวจสอบคอลัมน์ในตาราง notifications
 db.all("PRAGMA table_info(notifications)", (err, columns) => {
@@ -504,15 +504,16 @@ app.get('/notifications', (req, res) => {
     const sql = `SELECT notifications.*, users.user_profile_image, users.user_name
                  FROM notifications
                  JOIN users ON notifications.user_id = users.id`;
-  
+    const params = [19]; // ลองกำหนด user_id เจาะจงเพื่อทดสอบ
     db.all(sql, [], (err, rows) => {
       if (err) {
-        console.error(err);
+        console.error('เกิดข้อผิดพลาดในการดึงข้อมูลการแจ้งเตือน:', err);
         return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลการแจ้งเตือน' });
       }
+      console.log('ข้อมูลการแจ้งเตือน:', rows); // เพิ่ม log เพื่อตรวจสอบข้อมูล
       res.render('notifications', {
-        name: req.session.userName, // ส่งค่าชื่อผู้ใช้ไปยังหน้า notifications.ejs
-        notifications: rows // ส่งตัวแปร notifications ไปด้วย
+        name: req.session.userName,
+        notifications: rows
       });
     });
 });

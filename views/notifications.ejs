@@ -65,6 +65,8 @@
               <% if (notification.status === 'pending') { %>
                 <button class="btn btn-success btn-accept">ยอมรับ</button>
                 <button class="btn btn-danger btn-reject">ปฏิเสธ</button>
+              <% } else if (notification.status === 'ได้รับการแลกเปลี่ยนแล้ว') { %>
+                <p class="text-success">ได้รับการแลกเปลี่ยนแล้ว</p>
               <% } %>
             </div>
           </div>
@@ -73,7 +75,7 @@
         <p>ไม่มีการแจ้งเตือน</p>
       <% } %>
     </div>
-  </div>  
+  </div> 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
     integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
