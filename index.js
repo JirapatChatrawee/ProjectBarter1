@@ -59,6 +59,28 @@ const ifLoggedIn = (req, res, next) => {
     next();
 };
 
+const isAdmin = (req, res, next) => {
+    const userId = req.session.userID;
+    dbConnection.execute('SELECT r.role FROM user_roles ur JOIN roles r ON ur.role_id = r.id WHERE ur.user_id = ?', [userId])
+        .then(([rows]) => {
+            if (rows.length > 0 && rows[0].role === 'admin') {
+                next();
+            } else {
+                res.status(403).send('Access denied.');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send('An error occurred while checking admin privileges.');
+        });
+};
+
+app.get('/admin', ifNotLoggedIn, isAdmin, (req, res) => {
+    res.render('admin', {
+        name: req.session.userName
+    });
+});
+
 // Root page
 app.get('/', ifNotLoggedIn, (req, res) => {
     console.log('User name:', req.session.userName); // Log the username
@@ -163,25 +185,43 @@ app.post('/', ifLoggedIn, [
 
 ], (req, res) => {
     const validation_result = validationResult(req);
-    const { user_pass, user_email } = req.body;
+    const { user_email, user_pass } = req.body;
     if (validation_result.isEmpty()) {
-        dbConnection.execute("SELECT * FROM users WHERE email = ?", [user_email])
+        dbConnection.execute('SELECT * FROM users WHERE email=?', [user_email])
             .then(([rows]) => {
+                if (rows.length === 1) {
+                    bcrypt.compare(user_pass, rows[0].password).then(compare_result => {
+                        if (compare_result === true) {
+                            req.session.isLoggedIn = true;
+                            req.session.userID = rows[0].id;
+                            req.session.userName = rows[0].name;
 
-                bcrypt.compare(user_pass, rows[0].password).then(compare_result => {
-                    if (compare_result === true) {
-                        req.session.isLoggedIn = true;
-                        req.session.userID = rows[0].id; // Store userID in session
-                        req.session.userName = rows[0].name; // Store username in session
-                        res.redirect('/');
-                    } else {
-                        res.render('login-register', {
-                            login_errors: ['Invalid Password']
-                        });
-                    }
-                }).catch(err => {
-                    if (err) throw err;
-                });
+                            // Check the role of the user
+                            dbConnection.execute('SELECT r.role FROM user_roles ur JOIN roles r ON ur.role_id = r.id WHERE ur.user_id = ?', [rows[0].id])
+                                .then(([roleRows]) => {
+                                    if (roleRows.length > 0 && roleRows[0].role === 'admin') {
+                                        return res.redirect('/admin');
+                                    } else {
+                                        return res.redirect('/');
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                    res.status(500).send('An error occurred while checking user role.');
+                                });
+                        } else {
+                            res.render('login-register', {
+                                login_errors: ['Invalid Password']
+                            });
+                        }
+                    }).catch(err => {
+                        if (err) throw err;
+                    });
+                } else {
+                    res.render('login-register', {
+                        login_errors: ['Invalid Email Address']
+                    });
+                }
             }).catch(err => {
                 if (err) throw err;
             });
@@ -189,7 +229,6 @@ app.post('/', ifLoggedIn, [
         let allErrors = validation_result.errors.map((error) => {
             return error.msg;
         });
-
         res.render('login-register', {
             login_errors: allErrors
         });
