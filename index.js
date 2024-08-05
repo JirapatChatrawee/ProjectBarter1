@@ -112,6 +112,23 @@ app.get('/admin/dashboard-data', ifNotLoggedIn, isAdmin, async (req, res) => {
     }
 });
 
+// เส้นทางสำหรับดูรายการสินค้า
+app.get('/items', ifNotLoggedIn, isAdmin, (req, res) => {
+    dbConnection.execute('SELECT * FROM products')
+        .then(([rows]) => {
+            res.render('items', {
+                user: {
+                    name: req.session.userName,
+                    products: rows
+                }
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send('An error occurred while fetching items.');
+        });
+});
+
 // Root page
 app.get('/', ifNotLoggedIn, (req, res) => {
     console.log('User name:', req.session.userName); // Log the username
