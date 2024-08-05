@@ -55,30 +55,48 @@
     </form>
   </div>
 
-
+  <h1>Welcome, <%= name %>!</h1>
+    
+  <div class="dashboard">
+      <div class="dashboard-item">
+          <h2>Total Users</h2>
+          <p id="total-users">Loading...</p>
+      </div>
+      <div class="dashboard-item">
+          <h2>Total Exchanged Items</h2>
+          <p id="total-exchanged-items">Loading...</p>
+      </div>
+      <div class="dashboard-item">
+          <h2>Total Free Items</h2>
+          <p id="total-free-items">Loading...</p>
+      </div>
+      <div class="dashboard-item">
+          <h2>Latest Notifications</h2>
+          <ul id="latest-notifications">
+              <li>Loading...</li>
+          </ul>
+      </div>
+  </div>
 
   <script>
-    const productImages = [
-      "images/show1.png",
-      "images/show2.png",
-      "images/show3.png",
-      // เพิ่มรูปภาพเพิ่มเติมตามต้องการ
-    ];
-
-    const carouselImg = document.getElementById("productImage");
-    let currentIndex = 0;
-
-    function showNextImage() {
-      const imageUrl = productImages[currentIndex];
-      carouselImg.setAttribute("src", imageUrl);
-      currentIndex = (currentIndex + 1) % productImages.length;
-    }
-
-    // เรียกใช้ฟังก์ชันแสดงรูปภาพตั้งแต่เริ่มต้น
-    showNextImage();
-
-    // ตั้งเวลาเรียกใช้ฟังก์ชันแสดงรูปภาพทุก ๆ 3 วินาที (หรือตามที่คุณต้องการ)
-    setInterval(showNextImage, 3000);
+      // Fetch dashboard data from the server
+      fetch('/admin/dashboard-data')
+          .then(response => response.json())
+          .then(data => {
+              document.getElementById('total-users').textContent = data.totalUsers;
+              document.getElementById('total-exchanged-items').textContent = data.totalExchangedItems;
+              document.getElementById('total-free-items').textContent = data.totalFreeItems;
+              const notificationsList = document.getElementById('latest-notifications');
+              notificationsList.innerHTML = '';
+              data.latestNotifications.forEach(notification => {
+                  const li = document.createElement('li');
+                  li.textContent = notification.message;
+                  notificationsList.appendChild(li);
+              });
+          })
+          .catch(error => {
+              console.error('Error fetching dashboard data:', error);
+          });
   </script>
 </body>
 

@@ -81,6 +81,37 @@ app.get('/admin', ifNotLoggedIn, isAdmin, (req, res) => {
     });
 });
 
+// Route for fetching dashboard data
+app.get('/admin/dashboard-data', ifNotLoggedIn, isAdmin, async (req, res) => {
+    try {
+        // Query to get total number of users
+        const [totalUsersRows] = await dbConnection.execute('SELECT COUNT(*) as totalUsers FROM users');
+        const totalUsers = totalUsersRows[0].totalUsers;
+
+        // Query to get total number of exchanged items
+        const [totalExchangedItemsRows] = await dbConnection.execute('SELECT COUNT(*) as totalExchangedItems FROM products WHERE status = "exchange"');
+        const totalExchangedItems = totalExchangedItemsRows[0].totalExchangedItems;
+
+        // Query to get total number of free items
+        const [totalFreeItemsRows] = await dbConnection.execute('SELECT COUNT(*) as totalFreeItems FROM products WHERE status = "free"');
+        const totalFreeItems = totalFreeItemsRows[0].totalFreeItems;
+
+        // Query to get the latest notifications
+        const [latestNotificationsRows] = await dbConnection.execute('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 5');
+        const latestNotifications = latestNotificationsRows.map(row => ({ message: row.message }));
+
+        res.json({
+            totalUsers,
+            totalExchangedItems,
+            totalFreeItems,
+            latestNotifications
+        });
+    } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        res.status(500).json({ error: 'Error fetching dashboard data' });
+    }
+});
+
 // Root page
 app.get('/', ifNotLoggedIn, (req, res) => {
     console.log('User name:', req.session.userName); // Log the username
