@@ -247,9 +247,15 @@ app.post('/', ifLoggedIn, [
                             // Check the role of the user
                             dbConnection.execute('SELECT r.role FROM user_roles ur JOIN roles r ON ur.role_id = r.id WHERE ur.user_id = ?', [rows[0].id])
                                 .then(([roleRows]) => {
-                                    if (roleRows.length > 0 && roleRows[0].role === 'admin') {
-                                        return res.redirect('/admin');
+                                    if (roleRows.length > 0) {
+                                        req.session.userRole = roleRows[0].role;
+                                        if (roleRows[0].role === 'admin') {
+                                            return res.redirect('/admin');
+                                        } else {
+                                            return res.redirect('/');
+                                        }
                                     } else {
+                                        req.session.userRole = 'user'; // If no role found, set to user
                                         return res.redirect('/');
                                     }
                                 })
@@ -541,6 +547,7 @@ app.get('/view-user/:user_id', ifNotLoggedIn, function (req, res) {
 
 
 
+// Route สำหรับแอดมินแก้ไขผลิตภัณฑ์
 app.get('/edit-product/:product_id', ifNotLoggedIn, function (req, res) {
     const productId = req.params.product_id;
     const query = 'SELECT * FROM products WHERE id = ?';
@@ -549,8 +556,8 @@ app.get('/edit-product/:product_id', ifNotLoggedIn, function (req, res) {
         .then(([rows]) => {
             if (rows.length > 0) {
                 const product = rows[0];
-                // ตรวจสอบว่าผู้ใช้เป็นเจ้าของสินค้าหรือไม่
-                if (product.user_id !== req.session.userID) {
+                // ตรวจสอบ role ของผู้ใช้
+                if (req.session.userRole !== 'admin' && product.user_id !== req.session.userID) {
                     return res.status(403).send(`
                         <html>
                         <head>
@@ -626,7 +633,7 @@ app.post('/edit-product/:product_id', ifNotLoggedIn, upload.single('image'), fun
         .then(([rows]) => {
             if (rows.length > 0) {
                 const product = rows[0];
-                if (product.user_id !== req.session.userID) {
+                if (req.session.userRole !== 'admin' && product.user_id !== req.session.userID) {
                     return res.status(403).send('คุณไม่มีสิทธิ์ในการแก้ไขผลิตภัณฑ์นี้');
                 }
                 // แก้ไขสินค้า โดยตรวจสอบค่า undefined และกำหนดเป็น null ถ้าจำเป็น
@@ -642,7 +649,11 @@ app.post('/edit-product/:product_id', ifNotLoggedIn, upload.single('image'), fun
             }
         })
         .then(() => {
-            res.redirect('/view-user/' + req.session.userID); // เปลี่ยนเส้นทางหลังจากแก้ไขสำเร็จ
+            if (req.session.userRole !== 'admin') {
+                res.redirect('/view-user/' + req.session.userID); // เปลี่ยนเส้นทางไปยังหน้าดูข้อมูลผู้ใช้
+            } else {
+                res.redirect('/items'); // เปลี่ยนเส้นทางไปยังหน้ารายการสินค้าสำหรับแอดมิน
+            }
         })
         .catch(err => {
             console.error(err);
@@ -666,7 +677,7 @@ app.post('/delete-product/:product_id', ifNotLoggedIn, function (req, res) {
         .then(([rows]) => {
             if (rows.length > 0) {
                 const product = rows[0];
-                if (product.user_id !== req.session.userID) {
+                if (req.session.userRole !== 'admin' && product.user_id !== req.session.userID) {
                     return res.status(403).send(`
                         <html>
                         <head>
@@ -758,7 +769,11 @@ app.post('/delete-product/:product_id', ifNotLoggedIn, function (req, res) {
         })
         .then(() => {
             // Redirect หลังจากลบเสร็จ
-            res.redirect('/view-user/' + req.session.userID);
+            if (req.session.userRole !== 'admin') {
+                res.redirect('/view-user/' + req.session.userID); // เปลี่ยนเส้นทางไปยังหน้าดูข้อมูลผู้ใช้
+            } else {
+                res.redirect('/items'); // เปลี่ยนเส้นทางไปยังหน้ารายการสินค้าสำหรับแอดมิน
+            }
         })
         .catch(err => {
             console.error(err);
@@ -837,11 +852,23 @@ app.get('/search', ifNotLoggedIn, (req, res) => {
     
     // ดำเนินการ query ไปที่ฐานข้อมูล
     dbConnection.execute(sql, params).then(([rows]) => {
-         // เมื่อ query เสร็จสิ้น ให้ render หน้า home พร้อมกับผลลัพธ์ของสินค้า
-        res.render('home', {
-            name: req.session.userName,  // ส่งชื่่อผู้ใช้ไปยัง template
-            products: rows   // ส่งผลลัพธ์ของสินค้าไปยัง template
-        });
+        // ตรวจสอบบทบาทของผู้ใช้
+        const userRole = req.session.userRole;
+        
+        
+        if (userRole !== 'admin') {
+            // ถ้าเป็น user ให้ render หน้า home
+            res.render('home', {
+                name: req.session.userName, // ส่งชื่อผู้ใช้ไปยัง template
+                products: rows // ส่งผลลัพธ์ของสินค้าไปยัง template
+            });
+        } else {
+            // ถ้าเป็น admin ให้ render หน้า items
+            res.render('items', {
+                //name: req.session.userName, // ส่งชื่อผู้ใช้ไปยัง template
+                products: rows // ส่งผลลัพธ์ของสินค้าไปยัง template
+            });
+        }
     }).catch(err => {
         console.error(err);
         res.status(500).send('Error occurred while searching for products.');
